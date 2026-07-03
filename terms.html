@@ -3,211 +3,152 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Terms of Use — TwistLog</title>
+  <meta name="description" content="Terms of Use for TwistLog, a bottle-opening log and reminder companion in development by PivotEdge LLC." />
+  <title>Terms of Use | TwistLog</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *, *::before, *::after { box-sizing: border-box; }
     :root {
-      --black:  #0a0c0a;
-      --dark:   #0f1410;
-      --card:   #141a14;
-      --gold:   #c9a84c;
-      --green2: #52b788;
-      --muted:  #5a6b5a;
-      --text:   #d4ddd4;
-      --white:  #f0f5f0;
+      --ink: #16201b;
+      --body: #4a5b52;
+      --muted: #718078;
+      --line: #dfe7e2;
+      --paper: #fbfcf9;
+      --mist: #eef5ef;
+      --green: #146b49;
+      --green-dark: #0c4d36;
+      --amber: #d88a21;
+      --amber-soft: #f7e2c5;
+      --white: #ffffff;
     }
-    html, body { background: var(--black); color: var(--text); font-family: 'Inter', sans-serif; font-size: 16px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
-    .page { max-width: 760px; margin: 0 auto; padding: 4rem 2rem 6rem; }
-    .logo-mark { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 3rem; text-decoration: none; }
-    .logo-ring { width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--gold); display: flex; align-items: center; justify-content: center; }
-    .logo-ring svg { width: 16px; height: 16px; }
-    .logo-name { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; letter-spacing: 0.08em; color: var(--white); }
-    .logo-name span { color: var(--gold); }
-    h1 { font-family: 'Bebas Neue', sans-serif; font-size: 2.8rem; letter-spacing: 0.04em; color: var(--white); margin-bottom: 0.4rem; }
-    .meta { font-size: 0.8rem; color: var(--muted); margin-bottom: 2.5rem; }
-    .summary-box { background: var(--card); border: 1px solid rgba(201,168,76,0.2); border-left: 3px solid var(--gold); border-radius: 6px; padding: 1.5rem 1.75rem; margin-bottom: 3rem; }
-    .summary-box h2 { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; }
-    .summary-box ul { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
-    .summary-box li { font-size: 0.9rem; display: flex; gap: 0.6rem; }
-    .summary-box li::before { content: '✓'; color: var(--green2); font-weight: 600; flex-shrink: 0; }
-    .warning-box { background: rgba(224,112,112,0.08); border: 1px solid rgba(224,112,112,0.25); border-radius: 6px; padding: 1.25rem 1.5rem; margin: 1.5rem 0; }
-    .warning-box p { color: #e8a0a0; margin: 0; font-size: 0.9rem; }
-    h2 { font-size: 1.15rem; font-weight: 600; color: var(--white); margin: 2.5rem 0 0.75rem; }
-    h3 { font-size: 0.95rem; font-weight: 600; color: var(--text); margin: 1.5rem 0 0.5rem; }
-    p { margin-bottom: 1rem; color: var(--text); font-size: 0.95rem; }
-    ul, ol { margin: 0.5rem 0 1rem 1.5rem; }
-    li { margin-bottom: 0.4rem; font-size: 0.95rem; }
-    .section-divider { border: none; border-top: 1px solid rgba(255,255,255,0.06); margin: 2rem 0; }
-    a { color: var(--gold); text-decoration: none; }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--body);
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 16px;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--green-dark); font-weight: 700; text-decoration: none; }
     a:hover { text-decoration: underline; }
-    .footer { margin-top: 4rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.06); font-size: 0.75rem; color: var(--muted); display: flex; gap: 1.5rem; flex-wrap: wrap; }
+    .page { width: min(860px, calc(100% - 40px)); margin: 0 auto; padding: 42px 0 72px; }
+    .brand { display: inline-flex; align-items: center; gap: 10px; margin-bottom: 46px; color: var(--ink); font-weight: 800; letter-spacing: -0.03em; text-decoration: none; font-size: 1.1rem; }
+    .brand-mark { width: 34px; height: 34px; border: 7px solid var(--green); border-radius: 999px; box-shadow: inset 0 0 0 2px var(--paper), 0 0 0 1px rgba(20, 107, 73, 0.18); position: relative; }
+    .brand-mark::after { content: ""; width: 8px; height: 8px; border-radius: 999px; background: var(--amber); position: absolute; top: -6px; right: 0; }
+    .hero { padding: 34px; border: 1px solid var(--line); border-radius: 8px; background: linear-gradient(180deg, var(--white), var(--mist)); }
+    .eyebrow { margin: 0 0 10px; color: var(--green); font-size: 0.78rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }
+    h1 { margin: 0 0 10px; color: var(--ink); font-size: clamp(2.4rem, 6vw, 4.2rem); line-height: 1; letter-spacing: -0.08em; }
+    .meta { margin: 0; color: var(--muted); font-size: 0.92rem; }
+    .summary { margin: 26px 0 0; padding: 22px; border-left: 5px solid var(--amber); border-radius: 8px; background: var(--amber-soft); color: #5e3a13; }
+    .summary strong { color: #3d260d; }
+    main { padding-top: 30px; }
+    h2 { margin: 34px 0 10px; color: var(--ink); font-size: 1.35rem; letter-spacing: -0.04em; line-height: 1.2; }
+    h3 { margin: 22px 0 8px; color: var(--ink); font-size: 1rem; }
+    p { margin: 0 0 14px; }
+    ul { margin: 8px 0 18px 22px; padding: 0; }
+    li { margin-bottom: 7px; }
+    .callout { padding: 18px; border: 1px solid var(--line); border-radius: 8px; background: var(--white); }
+    .footer { margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 16px; color: var(--muted); font-size: 0.9rem; }
   </style>
 </head>
 <body>
   <div class="page">
-    <a href="/" class="logo-mark">
-      <div class="logo-ring">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round">
-          <circle cx="12" cy="12" r="8"/>
-          <path d="M12 8v4l2.5 2.5"/>
-        </svg>
-      </div>
-      <div class="logo-name">Twist<span>Log</span></div>
+    <a class="brand" href="/" aria-label="TwistLog home">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span>TwistLog</span>
     </a>
 
-    <h1>Terms of Use</h1>
-    <p class="meta">Effective Date: July 3, 2026 &nbsp;·&nbsp; PivotEdge LLC &nbsp;·&nbsp; California</p>
+    <header class="hero">
+      <p class="eyebrow">Terms of Use</p>
+      <h1>Terms for a reminder tool, not a medical authority.</h1>
+      <p class="meta">Effective date: July 3, 2026 · PivotEdge LLC · California, United States</p>
+      <div class="summary">
+        <strong>Plain English:</strong> TwistLog is being built to help log bottle-opening events and reminders. It does not verify ingestion, does not tell you what medication to take, and should never replace medical advice, pharmacy instructions, or emergency care.
+      </div>
+    </header>
 
-    <div class="summary-box">
-      <h2>Key Points — Plain English</h2>
+    <main>
+      <h2>1. Acceptance</h2>
+      <p>By using the TwistLog website, waitlist, future iOS app, future device prototypes, or related services, you agree to these Terms of Use. If you do not agree, do not use TwistLog.</p>
+      <p>These Terms are between you and PivotEdge LLC, the operator of TwistLog.</p>
+
+      <h2>2. Current Stage of the Product</h2>
+      <p>TwistLog is currently in early development. The website and waitlist are live, but app and device features may be prototypes, tests, beta releases, or future products. Features, pricing, hardware design, availability, and launch timing may change.</p>
+
+      <h2>3. Important Safety Limits</h2>
+      <div class="callout">
+        <p>TwistLog is a reminder and bottle-opening log companion. It is not a medical device, clinical service, pharmacy service, emergency service, or substitute for professional medical advice.</p>
+      </div>
+      <p>TwistLog may help you record or review that a bottle was opened. It does not:</p>
       <ul>
-        <li>TwistLog is a convenience tool — it detects bottle openings, not whether you actually took your medication.</li>
-        <li>Do not rely on TwistLog for critical medication decisions. Always consult your doctor or pharmacist.</li>
-        <li>We are not liable if a reminder is missed or a double-dose alert fails to fire.</li>
-        <li>You own your data. We do not sell it.</li>
-        <li>Disputes are resolved by binding arbitration under California law — no class actions.</li>
-        <li>You must be 18 or older to use TwistLog.</li>
+        <li>Verify that medication was swallowed or ingested.</li>
+        <li>Verify the correct medication or dosage was taken.</li>
+        <li>Prevent overdose, missed doses, side effects, or drug interactions.</li>
+        <li>Provide diagnosis, treatment, dosing instructions, or medical advice.</li>
+        <li>Guarantee reminders, alerts, notifications, sensor readings, or app availability.</li>
       </ul>
-    </div>
+      <p>Always follow instructions from your physician, pharmacist, medication label, and care team. If you believe you took the wrong medication, missed a critical dose, took too much, or are having a medical emergency, contact a healthcare professional or emergency services immediately.</p>
 
-    <div class="warning-box">
-      <p><strong>Critical Safety Notice:</strong> TwistLog is not a medical device. Do not use it as your sole method of managing medications that are critical to your health. If you miss a dose of a life-sustaining medication, contact your healthcare provider — do not rely solely on TwistLog alerts.</p>
-    </div>
+      <h2>4. Device and Event Accuracy</h2>
+      <p>Future TwistLog hardware may use sensors such as magnet/proximity detection, NFC, Bluetooth, buttons, or motion sensors. Any sensor can fail, misread, lose power, disconnect, be installed incorrectly, or produce duplicate or missing events.</p>
+      <p>A "bottle opened" event should be treated as a helpful reference, not proof that medicine was taken.</p>
 
-    <h2>1. Acceptance of Terms</h2>
-    <p>By accessing or using the TwistLog website (twistlog.com), iOS application, sensor ring hardware, or any related services (collectively, the "Service"), you agree to be bound by these Terms of Use ("Terms"). If you do not agree to these Terms, do not use the Service.</p>
-    <p>These Terms constitute a legally binding agreement between you and PivotEdge LLC ("PivotEdge," "we," "us," or "our"), a California limited liability company.</p>
+      <h2>5. Eligibility and Responsible Use</h2>
+      <p>TwistLog is intended for adults. If you use TwistLog to help a family member or another person, you are responsible for using it appropriately and not relying on it as the only safeguard for medication management.</p>
+      <p>You agree not to use TwistLog in a way that could endanger yourself or others, including using it as the sole tool for high-risk or life-sustaining medication decisions.</p>
 
-    <hr class="section-divider" />
+      <h2>6. Accounts and Security</h2>
+      <p>If accounts are offered, you are responsible for your login credentials and account activity. Notify us at <a href="mailto:hello@twistlog.com">hello@twistlog.com</a> if you suspect unauthorized access.</p>
 
-    <h2>2. Not a Medical Device — Critical Limitations</h2>
+      <h2>7. Acceptable Use</h2>
+      <p>You agree not to:</p>
+      <ul>
+        <li>Use TwistLog unlawfully.</li>
+        <li>Interfere with or attack our website, app, APIs, devices, or infrastructure.</li>
+        <li>Reverse engineer or modify TwistLog hardware, firmware, app code, or services except where permitted by law.</li>
+        <li>Use TwistLog to collect information about another person without appropriate consent or authority.</li>
+        <li>Misrepresent TwistLog as FDA-approved, clinically validated, or a substitute for medical care.</li>
+      </ul>
 
-    <h3>What TwistLog does</h3>
-    <p>TwistLog detects the physical opening of a prescription bottle cap using a gyroscope sensor embedded in the TwistLog ring. When a twist is detected, a timestamp is logged. That is all the hardware does.</p>
+      <h2>8. Intellectual Property</h2>
+      <p>TwistLog, the TwistLog name, product concepts, design elements, website content, software, firmware, and related materials are owned by PivotEdge LLC or its licensors. You may not copy, resell, or misuse our materials or marks without permission.</p>
+      <p>You retain ownership of information you enter into TwistLog. You grant us permission to process that information as needed to provide and improve the service, as described in our Privacy Policy.</p>
 
-    <h3>What TwistLog does not do</h3>
-    <ul>
-      <li>TwistLog does not verify that medication was removed from the bottle.</li>
-      <li>TwistLog does not verify that medication was swallowed or ingested.</li>
-      <li>TwistLog does not verify the correct dosage was taken.</li>
-      <li>TwistLog does not provide drug interaction checks or clinical guidance.</li>
-      <li>TwistLog does not connect to pharmacy systems, medical records, or insurance providers.</li>
-      <li>TwistLog does not guarantee delivery of reminders, notifications, or alerts.</li>
-    </ul>
+      <h2>9. Purchases, Subscriptions, and Beta Products</h2>
+      <p>If TwistLog later offers hardware purchases, subscriptions, TestFlight builds, beta devices, or early access programs, additional terms may apply. Beta and prototype products may be incomplete, unreliable, and changed or discontinued.</p>
+      <p>Do not purchase or use a prototype if you require a clinically validated medication management system.</p>
 
-    <h3>FDA Status</h3>
-    <p>TwistLog has not been reviewed or cleared by the U.S. Food and Drug Administration. It is not classified as a medical device under 21 CFR Part 880 or any other FDA regulatory framework. It is a consumer lifestyle product in the same category as a smart alarm or habit tracker.</p>
+      <h2>10. Third-Party Services</h2>
+      <p>TwistLog may rely on third-party services such as Vercel, Resend, Supabase, Apple, Stripe, or notification providers. We are not responsible for outages, delays, changes, or failures caused by third-party services.</p>
 
-    <h3>No Medical Advice</h3>
-    <p>Nothing in the Service constitutes medical advice, diagnosis, or treatment. TwistLog does not create a patient-provider relationship. Always consult a licensed physician, pharmacist, or other qualified healthcare professional regarding your medications, dosing schedule, and any changes to your regimen.</p>
+      <h2>11. Disclaimers</h2>
+      <p>TwistLog is provided "as is" and "as available." To the fullest extent permitted by law, PivotEdge LLC disclaims all warranties, express or implied, including warranties of merchantability, fitness for a particular purpose, non-infringement, uninterrupted operation, and accuracy of reminders, alerts, device events, or history.</p>
 
-    <hr class="section-divider" />
+      <h2>12. Limitation of Liability</h2>
+      <p>To the fullest extent permitted by law, PivotEdge LLC will not be liable for indirect, incidental, special, consequential, exemplary, or punitive damages, or for damages arising from missed reminders, inaccurate events, delayed notifications, device failures, app outages, medication decisions, personal injury, or health outcomes.</p>
+      <p>To the fullest extent permitted by law, our total liability for any claim related to TwistLog will not exceed the greater of the amount you paid us for TwistLog products or services in the 12 months before the claim, or $100.</p>
 
-    <h2>3. Eligibility</h2>
-    <p>You must be at least 18 years of age to use the Service. By using the Service, you represent and warrant that you are 18 or older. If you are using the Service on behalf of a family member, you accept responsibility for ensuring appropriate supervision and for all activity under your account.</p>
+      <h2>13. Indemnification</h2>
+      <p>You agree to defend, indemnify, and hold harmless PivotEdge LLC from claims, damages, losses, liabilities, and expenses arising from your misuse of TwistLog, violation of these Terms, violation of law, or use of TwistLog in place of appropriate medical care or supervision.</p>
 
-    <hr class="section-divider" />
+      <h2>14. Governing Law</h2>
+      <p>These Terms are governed by the laws of California, without regard to conflict-of-law rules. Any dispute will be handled in the state or federal courts located in California unless a later version of these Terms specifies a valid arbitration process.</p>
 
-    <h2>4. Your Account</h2>
-    <p>You are responsible for maintaining the confidentiality of your account credentials and for all activity that occurs under your account. Notify us immediately at <a href="mailto:hello@twistlog.com">hello@twistlog.com</a> if you suspect unauthorized access to your account.</p>
-    <p>You may not share your account with others or use the Service for commercial purposes without our written consent.</p>
+      <h2>15. Changes</h2>
+      <p>We may update these Terms as the product evolves. The effective date above will show when this page was last updated. Your continued use of TwistLog after changes become effective means you accept the updated Terms.</p>
 
-    <hr class="section-divider" />
+      <h2>16. Contact</h2>
+      <p>Questions can be sent to <a href="mailto:hello@twistlog.com">hello@twistlog.com</a>.</p>
+    </main>
 
-    <h2>5. Hardware — The TwistLog Ring</h2>
-    <p>The TwistLog sensor ring is a consumer electronics product. By using the ring, you agree to:</p>
-    <ul>
-      <li>Use the ring only as intended — slipped over the neck of a standard prescription bottle.</li>
-      <li>Keep the ring away from water unless explicitly stated as water-resistant in product specifications.</li>
-      <li>Replace the coin cell battery when notified by the app. Failure to replace the battery may result in missed dose detections, for which PivotEdge is not liable.</li>
-      <li>Not attempt to modify, reverse-engineer, or disassemble the hardware.</li>
-    </ul>
-    <p>Hardware warranties, if any, are stated separately in the product documentation included with your purchase.</p>
-
-    <hr class="section-divider" />
-
-    <h2>6. Acceptable Use</h2>
-    <p>You agree not to:</p>
-    <ul>
-      <li>Use the Service for any unlawful purpose or in violation of any applicable law.</li>
-      <li>Attempt to gain unauthorized access to our systems, servers, or databases.</li>
-      <li>Reverse-engineer, decompile, or disassemble any portion of the Service.</li>
-      <li>Use the Service to collect or harvest data about other users without their consent.</li>
-      <li>Transmit viruses, malware, or any code designed to disrupt or damage the Service.</li>
-      <li>Use the Service in any way that could endanger your health or the health of others by substituting TwistLog alerts for proper medical supervision.</li>
-    </ul>
-
-    <hr class="section-divider" />
-
-    <h2>7. Intellectual Property</h2>
-    <p>All content, software, designs, trademarks, and materials comprising the Service are owned by PivotEdge LLC or licensed to us. "TwistLog" and the TwistLog logo are trademarks of PivotEdge LLC. You may not use our trademarks without our prior written consent.</p>
-    <p>You retain ownership of the data you enter into the Service (medication names, etc.). By submitting data to the Service, you grant PivotEdge a limited, non-exclusive license to store and process that data solely for the purpose of providing the Service to you.</p>
-
-    <hr class="section-divider" />
-
-    <h2>8. Disclaimer of Warranties</h2>
-    <p>THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTY OF ANY KIND. TO THE FULLEST EXTENT PERMITTED BY APPLICABLE LAW, PIVOTEDGE LLC EXPRESSLY DISCLAIMS ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO:</p>
-    <ul>
-      <li>Implied warranties of merchantability, fitness for a particular purpose, and non-infringement.</li>
-      <li>Any warranty that the Service will be uninterrupted, error-free, or free of viruses or harmful components.</li>
-      <li>Any warranty that reminders, alerts, or notifications will be delivered or received on time or at all.</li>
-      <li>Any warranty that dose detection will be accurate, complete, or reliable in all circumstances.</li>
-    </ul>
-    <p>You assume all risk associated with your use of the Service and your reliance on any information provided through the Service.</p>
-
-    <hr class="section-divider" />
-
-    <h2>9. Limitation of Liability</h2>
-    <p>TO THE FULLEST EXTENT PERMITTED BY APPLICABLE LAW, PIVOTEDGE LLC AND ITS OFFICERS, DIRECTORS, EMPLOYEES, AND AGENTS SHALL NOT BE LIABLE FOR:</p>
-    <ul>
-      <li>Any indirect, incidental, special, consequential, or punitive damages.</li>
-      <li>Any damages arising from a missed dose reminder, a failed double-dose alert, or an undetected bottle opening.</li>
-      <li>Any personal injury or health outcome arising from your use of or reliance on the Service.</li>
-      <li>Any loss of data, medication history, or account information.</li>
-    </ul>
-    <p>IN NO EVENT SHALL PIVOTEDGE LLC'S TOTAL LIABILITY TO YOU FOR ALL CLAIMS ARISING FROM OR RELATED TO THE SERVICE EXCEED THE GREATER OF: (A) THE TOTAL AMOUNT YOU PAID TO PIVOTEDGE IN THE 12 MONTHS PRECEDING THE CLAIM, OR (B) ONE HUNDRED DOLLARS ($100.00).</p>
-    <p>Some jurisdictions do not allow the exclusion of certain warranties or the limitation of liability for certain damages. In such jurisdictions, our liability is limited to the maximum extent permitted by law.</p>
-
-    <hr class="section-divider" />
-
-    <h2>10. Indemnification</h2>
-    <p>You agree to defend, indemnify, and hold harmless PivotEdge LLC and its officers, directors, employees, and agents from and against any claims, liabilities, damages, losses, and expenses (including reasonable attorneys' fees) arising from: (a) your use of the Service; (b) your violation of these Terms; or (c) your violation of any applicable law or the rights of any third party.</p>
-
-    <hr class="section-divider" />
-
-    <h2>11. Dispute Resolution — Binding Arbitration</h2>
-    <p>Any dispute, claim, or controversy arising from or related to these Terms or the Service will be resolved by binding individual arbitration administered by JAMS under its Streamlined Arbitration Rules, except that either party may bring claims in small claims court if they qualify.</p>
-    <p><strong>Class Action Waiver:</strong> You and PivotEdge each waive the right to participate in a class action lawsuit or class-wide arbitration. All claims must be brought on an individual basis.</p>
-    <p>These Terms are governed by the laws of the State of California, without regard to conflict of law principles. The arbitration will be conducted in Los Angeles County, California, or via video conference if agreed upon.</p>
-
-    <hr class="section-divider" />
-
-    <h2>12. Termination</h2>
-    <p>We reserve the right to suspend or terminate your access to the Service at any time, with or without notice, for conduct that we believe violates these Terms or is harmful to other users, us, or third parties.</p>
-    <p>You may terminate your account at any time through the app or by emailing <a href="mailto:hello@twistlog.com">hello@twistlog.com</a>. Upon termination, your right to use the Service ceases immediately. Data deletion follows the timeline described in our Privacy Policy.</p>
-
-    <hr class="section-divider" />
-
-    <h2>13. Changes to These Terms</h2>
-    <p>We may update these Terms from time to time. For material changes, we will notify you by email at least <strong>30 days before</strong> the changes take effect. Your continued use of the Service after the effective date constitutes acceptance of the updated Terms.</p>
-    <p>If you do not agree to the updated Terms, you must stop using the Service and may delete your account.</p>
-
-    <hr class="section-divider" />
-
-    <h2>14. Contact</h2>
-    <p>
-      <strong>PivotEdge LLC — TwistLog</strong><br />
-      Email: <a href="mailto:hello@twistlog.com">hello@twistlog.com</a><br />
-      California, United States
-    </p>
-
-    <div class="footer">
+    <footer class="footer">
       <a href="/">Home</a>
-      <a href="/privacy.html">Privacy Policy</a>
+      <a href="/privacy.html">Privacy</a>
       <span>© 2026 TwistLog · PivotEdge LLC</span>
-    </div>
+    </footer>
   </div>
 </body>
 </html>
