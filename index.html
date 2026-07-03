@@ -9,333 +9,69 @@
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --black:   #0a0c0a;
-      --dark:    #0f1410;
-      --card:    #141a14;
-      --gold:    #c9a84c;
-      --gold2:   #e8c96a;
-      --green:   #2d6a4f;
-      --green2:  #52b788;
-      --muted:   #5a6b5a;
-      --text:    #d4ddd4;
-      --white:   #f0f5f0;
+      --black:  #0a0c0a;
+      --dark:   #0f1410;
+      --card:   #141a14;
+      --gold:   #c9a84c;
+      --gold2:  #e8c96a;
+      --green:  #2d6a4f;
+      --green2: #52b788;
+      --muted:  #5a6b5a;
+      --text:   #d4ddd4;
+      --white:  #f0f5f0;
     }
-
-    html, body {
-      height: 100%;
-      background: var(--black);
-      color: var(--text);
-      font-family: 'Inter', sans-serif;
-      font-size: 16px;
-      line-height: 1.6;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    /* ── NOISE TEXTURE ── */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    /* ── AMBIENT GLOW ── */
-    .glow-top {
-      position: fixed;
-      top: -200px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 700px;
-      height: 400px;
-      background: radial-gradient(ellipse, rgba(45,106,79,0.18) 0%, transparent 70%);
-      pointer-events: none;
-      z-index: 0;
-    }
-    .glow-bottom {
-      position: fixed;
-      bottom: -200px;
-      right: -100px;
-      width: 500px;
-      height: 400px;
-      background: radial-gradient(ellipse, rgba(201,168,76,0.10) 0%, transparent 70%);
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    /* ── LAYOUT ── */
-    .page {
-      position: relative;
-      z-index: 1;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 3rem 1.5rem;
-    }
-
-    /* ── LOGO MARK ── */
-    .logo-mark {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      margin-bottom: 3.5rem;
-    }
-    .logo-ring {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      border: 2.5px solid var(--gold);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      box-shadow: 0 0 18px rgba(201,168,76,0.25);
-    }
-    .logo-ring::after {
-      content: '';
-      position: absolute;
-      width: 34px;
-      height: 34px;
-      border-radius: 50%;
-      border: 1.5px solid rgba(201,168,76,0.3);
-    }
-    .logo-ring svg {
-      width: 20px;
-      height: 20px;
-    }
-    .logo-name {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 1.9rem;
-      letter-spacing: 0.08em;
-      color: var(--white);
-    }
-    .logo-name span {
-      color: var(--gold);
-    }
-
-    /* ── HERO ── */
-    .hero {
-      text-align: center;
-      max-width: 640px;
-    }
-
-    .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 0.72rem;
-      font-weight: 600;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: var(--green2);
-      margin-bottom: 1.5rem;
-    }
-    .eyebrow::before, .eyebrow::after {
-      content: '';
-      display: block;
-      width: 28px;
-      height: 1px;
-      background: var(--green2);
-      opacity: 0.5;
-    }
-
-    h1 {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: clamp(3.2rem, 9vw, 5.5rem);
-      line-height: 1.0;
-      letter-spacing: 0.04em;
-      color: var(--white);
-      margin-bottom: 0.4rem;
-    }
-    h1 em {
-      font-style: normal;
-      color: var(--gold);
-    }
-
-    .sub {
-      font-size: 1.05rem;
-      font-weight: 300;
-      color: var(--muted);
-      margin-bottom: 2.8rem;
-      line-height: 1.7;
-    }
-    .sub strong {
-      color: var(--text);
-      font-weight: 500;
-    }
-
-    /* ── PILL RING SVG ── */
-    .ring-visual {
-      margin: 0 auto 2.5rem;
-      width: 110px;
-      height: 110px;
-      position: relative;
-    }
-    .ring-visual svg {
-      width: 100%;
-      height: 100%;
-      animation: spin-slow 12s linear infinite;
-    }
-    @keyframes spin-slow {
-      from { transform: rotate(0deg); }
-      to   { transform: rotate(360deg); }
-    }
-    .ring-pulse {
-      position: absolute;
-      inset: 18px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(82,183,136,0.15) 0%, transparent 70%);
-      animation: pulse 3s ease-in-out infinite;
-    }
-    @keyframes pulse {
-      0%, 100% { opacity: 0.4; transform: scale(0.95); }
-      50%       { opacity: 1;   transform: scale(1.05); }
-    }
-
-    /* ── EMAIL FORM ── */
-    .signup-label {
-      font-size: 0.78rem;
-      font-weight: 500;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 0.75rem;
-    }
-
-    .signup-form {
-      display: flex;
-      gap: 0;
-      max-width: 420px;
-      margin: 0 auto 1rem;
-      border: 1px solid rgba(201,168,76,0.25);
-      border-radius: 6px;
-      overflow: hidden;
-      background: var(--card);
-      transition: border-color 0.2s;
-    }
-    .signup-form:focus-within {
-      border-color: rgba(201,168,76,0.6);
-      box-shadow: 0 0 0 3px rgba(201,168,76,0.08);
-    }
-
-    .signup-form input {
-      flex: 1;
-      padding: 0.85rem 1rem;
-      background: transparent;
-      border: none;
-      outline: none;
-      color: var(--white);
-      font-family: 'Inter', sans-serif;
-      font-size: 0.9rem;
-    }
+    html, body { height: 100%; background: var(--black); color: var(--text); font-family: 'Inter', sans-serif; font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+    body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E"); pointer-events: none; z-index: 0; }
+    .glow-top { position: fixed; top: -200px; left: 50%; transform: translateX(-50%); width: 700px; height: 400px; background: radial-gradient(ellipse, rgba(45,106,79,0.18) 0%, transparent 70%); pointer-events: none; z-index: 0; }
+    .glow-bottom { position: fixed; bottom: -200px; right: -100px; width: 500px; height: 400px; background: radial-gradient(ellipse, rgba(201,168,76,0.10) 0%, transparent 70%); pointer-events: none; z-index: 0; }
+    .page { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem 1.5rem; }
+    .logo-mark { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 3.5rem; }
+    .logo-ring { width: 48px; height: 48px; border-radius: 50%; border: 2.5px solid var(--gold); display: flex; align-items: center; justify-content: center; position: relative; box-shadow: 0 0 18px rgba(201,168,76,0.25); }
+    .logo-ring::after { content: ''; position: absolute; width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid rgba(201,168,76,0.3); }
+    .logo-ring svg { width: 20px; height: 20px; }
+    .logo-name { font-family: 'Bebas Neue', sans-serif; font-size: 1.9rem; letter-spacing: 0.08em; color: var(--white); }
+    .logo-name span { color: var(--gold); }
+    .hero { text-align: center; max-width: 640px; }
+    .eyebrow { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--green2); margin-bottom: 1.5rem; }
+    .eyebrow::before, .eyebrow::after { content: ''; display: block; width: 28px; height: 1px; background: var(--green2); opacity: 0.5; }
+    h1 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(3.2rem, 9vw, 5.5rem); line-height: 1.0; letter-spacing: 0.04em; color: var(--white); margin-bottom: 0.4rem; }
+    h1 em { font-style: normal; color: var(--gold); }
+    .sub { font-size: 1.05rem; font-weight: 300; color: var(--muted); margin-bottom: 2.8rem; line-height: 1.7; }
+    .sub strong { color: var(--text); font-weight: 500; }
+    .ring-visual { margin: 0 auto 2.5rem; width: 110px; height: 110px; position: relative; }
+    .ring-visual svg { width: 100%; height: 100%; animation: spin-slow 12s linear infinite; }
+    @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .ring-pulse { position: absolute; inset: 18px; border-radius: 50%; background: radial-gradient(circle, rgba(82,183,136,0.15) 0%, transparent 70%); animation: pulse 3s ease-in-out infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 0.4; transform: scale(0.95); } 50% { opacity: 1; transform: scale(1.05); } }
+    .signup-label { font-size: 0.78rem; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.75rem; }
+    .signup-form { display: flex; gap: 0; max-width: 420px; margin: 0 auto 1rem; border: 1px solid rgba(201,168,76,0.25); border-radius: 6px; overflow: hidden; background: var(--card); transition: border-color 0.2s; }
+    .signup-form:focus-within { border-color: rgba(201,168,76,0.6); box-shadow: 0 0 0 3px rgba(201,168,76,0.08); }
+    .signup-form input { flex: 1; padding: 0.85rem 1rem; background: transparent; border: none; outline: none; color: var(--white); font-family: 'Inter', sans-serif; font-size: 0.9rem; }
     .signup-form input::placeholder { color: var(--muted); }
-
-    .signup-form button {
-      padding: 0.85rem 1.4rem;
-      background: linear-gradient(135deg, var(--gold) 0%, var(--gold2) 100%);
-      border: none;
-      cursor: pointer;
-      font-family: 'Inter', sans-serif;
-      font-size: 0.82rem;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--black);
-      transition: opacity 0.2s;
-      white-space: nowrap;
-    }
+    .signup-form button { padding: 0.85rem 1.4rem; background: linear-gradient(135deg, var(--gold) 0%, var(--gold2) 100%); border: none; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 0.82rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--black); transition: opacity 0.2s; white-space: nowrap; }
     .signup-form button:hover { opacity: 0.88; }
-
-    .signup-note {
-      font-size: 0.72rem;
-      color: var(--muted);
-    }
-
-    /* ── DIVIDER ── */
-    .divider {
-      width: 48px;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, var(--gold), transparent);
-      margin: 3rem auto;
-      opacity: 0.4;
-    }
-
-    /* ── FEATURE PILLS ── */
-    .features {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 0.6rem;
-      max-width: 500px;
-      margin: 0 auto;
-    }
-    .feature-pill {
-      display: flex;
-      align-items: center;
-      gap: 0.45rem;
-      padding: 0.45rem 0.9rem;
-      border: 1px solid rgba(82,183,136,0.2);
-      border-radius: 100px;
-      background: rgba(45,106,79,0.08);
-      font-size: 0.78rem;
-      color: var(--green2);
-      font-weight: 500;
-    }
-    .feature-pill .dot {
-      width: 5px;
-      height: 5px;
-      border-radius: 50%;
-      background: var(--green2);
-      flex-shrink: 0;
-    }
-
-    /* ── FOOTER ── */
-    .footer {
-      margin-top: 4rem;
-      text-align: center;
-      font-size: 0.7rem;
-      color: var(--muted);
-      letter-spacing: 0.06em;
-    }
+    .signup-form button:disabled { opacity: 0.6; cursor: not-allowed; }
+    .signup-note { font-size: 0.72rem; color: var(--muted); }
+    .divider { width: 48px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); margin: 3rem auto; opacity: 0.4; }
+    .features { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.6rem; max-width: 500px; margin: 0 auto; }
+    .feature-pill { display: flex; align-items: center; gap: 0.45rem; padding: 0.45rem 0.9rem; border: 1px solid rgba(82,183,136,0.2); border-radius: 100px; background: rgba(45,106,79,0.08); font-size: 0.78rem; color: var(--green2); font-weight: 500; }
+    .feature-pill .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--green2); flex-shrink: 0; }
+    .footer { margin-top: 4rem; text-align: center; font-size: 0.7rem; color: var(--muted); letter-spacing: 0.06em; }
     .footer a { color: var(--muted); text-decoration: none; }
     .footer a:hover { color: var(--gold); }
-
-    /* ── SUCCESS STATE ── */
-    .success-msg {
-      display: none;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      color: var(--green2);
-      font-size: 0.88rem;
-      font-weight: 500;
-      margin-bottom: 1rem;
-    }
-    .success-msg.show { display: flex; }
-
-    @media (max-width: 480px) {
-      .signup-form { flex-direction: column; border-radius: 8px; }
-      .signup-form button { border-radius: 0 0 6px 6px; }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .ring-visual svg { animation: none; }
-      .ring-pulse { animation: none; }
-    }
+    .status-msg { display: none; align-items: center; justify-content: center; gap: 0.5rem; font-size: 0.88rem; font-weight: 500; margin-bottom: 1rem; }
+    .status-msg.show { display: flex; }
+    .status-msg.success { color: var(--green2); }
+    .status-msg.error { color: #e07070; }
+    @media (max-width: 480px) { .signup-form { flex-direction: column; border-radius: 8px; } .signup-form button { border-radius: 0 0 6px 6px; } }
+    @media (prefers-reduced-motion: reduce) { .ring-visual svg { animation: none; } .ring-pulse { animation: none; } }
   </style>
 </head>
 <body>
   <div class="glow-top"></div>
   <div class="glow-bottom"></div>
-
   <main class="page">
-
-    <!-- Logo -->
     <div class="logo-mark">
       <div class="logo-ring">
         <svg viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round">
@@ -345,13 +81,8 @@
       </div>
       <div class="logo-name">Twist<span>Log</span></div>
     </div>
-
-    <!-- Hero -->
     <div class="hero">
-
       <div class="eyebrow">Coming Soon</div>
-
-      <!-- Spinning ring visual -->
       <div class="ring-visual">
         <div class="ring-pulse"></div>
         <svg viewBox="0 0 110 110" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -361,30 +92,23 @@
           <circle cx="55" cy="10" r="4" fill="#c9a84c"/>
         </svg>
       </div>
-
       <h1>Your bottle.<br/><em>Knows</em> you took it.</h1>
-
-      <p class="sub">
-        TwistLog is a smart sensor ring that slips onto your prescription bottle.<br/>
-        <strong>One twist. Logged. No app to open. No button to press.</strong>
-      </p>
-
+      <p class="sub">TwistLog is a smart sensor ring that slips onto your prescription bottle.<br/><strong>One twist. Logged. No app to open. No button to press.</strong></p>
       <p class="signup-label">Get early access</p>
-
-      <div class="success-msg" id="successMsg">
+      <div class="status-msg success" id="successMsg">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-        You're on the list — we'll be in touch.
+        You're on the list — check your inbox.
       </div>
-
+      <div class="status-msg error" id="errorMsg">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Something went wrong — please try again.
+      </div>
       <form class="signup-form" id="signupForm" onsubmit="handleSubmit(event)">
-        <input type="email" placeholder="your@email.com" required autocomplete="email" />
-        <button type="submit">Notify Me</button>
+        <input type="email" id="emailInput" placeholder="your@email.com" required autocomplete="email" />
+        <button type="submit" id="submitBtn">Notify Me</button>
       </form>
-
       <p class="signup-note">No spam. Just launch updates.</p>
-
       <div class="divider"></div>
-
       <div class="features">
         <div class="feature-pill"><span class="dot"></span>Passive twist detection</div>
         <div class="feature-pill"><span class="dot"></span>Double-dose alert</div>
@@ -393,22 +117,42 @@
         <div class="feature-pill"><span class="dot"></span>No behavior change needed</div>
         <div class="feature-pill"><span class="dot"></span>BLE · iOS · watchOS</div>
       </div>
-
     </div>
-
     <footer class="footer">
       <p>© 2026 TwistLog · PivotEdge LLC · <a href="mailto:hello@twistlog.com">hello@twistlog.com</a></p>
     </footer>
-
   </main>
-
   <script>
-    function handleSubmit(e) {
+    async function handleSubmit(e) {
       e.preventDefault();
-      const form = document.getElementById('signupForm');
-      const msg  = document.getElementById('successMsg');
-      form.style.display = 'none';
-      msg.classList.add('show');
+      const btn = document.getElementById('submitBtn');
+      const email = document.getElementById('emailInput').value;
+      const successMsg = document.getElementById('successMsg');
+      const errorMsg = document.getElementById('errorMsg');
+
+      btn.disabled = true;
+      btn.textContent = 'Sending...';
+      successMsg.classList.remove('show');
+      errorMsg.classList.remove('show');
+
+      try {
+        const res = await fetch('/api/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          document.getElementById('signupForm').style.display = 'none';
+          successMsg.classList.add('show');
+        } else {
+          throw new Error('Failed');
+        }
+      } catch {
+        errorMsg.classList.add('show');
+        btn.disabled = false;
+        btn.textContent = 'Notify Me';
+      }
     }
   </script>
 </body>
