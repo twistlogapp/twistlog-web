@@ -24,8 +24,15 @@ export default async function handler(req) {
 
     const RESEND_API_KEY = process.env.RESEND_API_KEY;
 
+    if (!RESEND_API_KEY) {
+      return new Response(JSON.stringify({ error: 'Missing API key' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     // Notify you of new signup
-    await fetch('https://api.resend.com/emails', {
+    const r1 = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${RESEND_API_KEY}`,
@@ -45,6 +52,12 @@ export default async function handler(req) {
         `,
       }),
     });
+    if (!r1.ok) {
+      const err = await r1.text();
+      return new Response(JSON.stringify({ error: 'Resend error', detail: err }), {
+        status: 500, headers: { 'Content-Type': 'application/json' },
+      });
+    }
 
     // Send confirmation to the user
     await fetch('https://api.resend.com/emails', {
