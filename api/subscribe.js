@@ -1,37 +1,22 @@
-export const config = {
-  runtime: 'edge',
-};
-
-export default async function handler(req) {
-  // Only allow POST
+export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
-      status: 405,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
-    const { email } = await req.json();
+    const { email } = req.body;
 
-    // Basic email validation
     if (!email || !email.includes('@')) {
-      return new Response(JSON.stringify({ error: 'Invalid email' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      });
+      return res.status(400).json({ error: 'Invalid email' });
     }
 
     const RESEND_API_KEY = process.env.RESEND_API_KEY;
 
     if (!RESEND_API_KEY) {
-      return new Response(JSON.stringify({ error: 'Missing API key' }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      });
+      return res.status(500).json({ error: 'Missing API key' });
     }
 
-    // Notify you of new signup
+    // Notify owner of new signup
     const r1 = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -52,14 +37,13 @@ export default async function handler(req) {
         `,
       }),
     });
+
     if (!r1.ok) {
-      const err = await r1.text();
-      return new Response(JSON.stringify({ error: 'Resend error', detail: err }), {
-        status: 500, headers: { 'Content-Type': 'application/json' },
-      });
+      const detail = await r1.text();
+      return res.status(500).json({ error: 'Resend error', detail });
     }
 
-    // Send confirmation to the user
+    // Send confirmation to subscriber
     await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -97,16 +81,10 @@ export default async function handler(req) {
       }),
     });
 
-    return new Response(JSON.stringify({ success: true }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return res.status(200).json({ success: true });
 
   } catch (err) {
     console.error('Subscribe error:', err);
-    return new Response(JSON.stringify({ error: 'Server error' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return res.status(500).json({ error: 'Server error', detail: err.message });
   }
 }
