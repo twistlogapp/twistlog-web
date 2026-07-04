@@ -82,17 +82,26 @@ final class AppStore: ObservableObject {
         medicationName: String?,
         notes: String?,
         minimumIntervalEnabled: Bool,
-        minimumIntervalMinutes: Int?
+        minimumIntervalMinutes: Int?,
+        reminderEnabled: Bool,
+        reminderHour: Int,
+        reminderMinute: Int,
+        reminderDays: Set<Weekday>
     ) {
-        bottles.append(
-            Bottle(
-                nickname: nickname,
-                medicationName: medicationName?.nilIfBlank,
-                notes: notes?.nilIfBlank,
-                minimumIntervalEnabled: minimumIntervalEnabled,
-                minimumIntervalMinutes: minimumIntervalEnabled ? minimumIntervalMinutes : nil
-            )
+        let bottle = Bottle(
+            nickname: nickname,
+            medicationName: medicationName?.nilIfBlank,
+            notes: notes?.nilIfBlank,
+            minimumIntervalEnabled: minimumIntervalEnabled,
+            minimumIntervalMinutes: minimumIntervalEnabled ? minimumIntervalMinutes : nil,
+            reminderEnabled: reminderEnabled,
+            reminderHour: reminderHour,
+            reminderMinute: reminderMinute,
+            reminderDays: reminderDays
         )
+
+        bottles.append(bottle)
+        scheduleReminderIfNeeded(for: bottle)
     }
 
     func updateBottle(
@@ -101,7 +110,11 @@ final class AppStore: ObservableObject {
         medicationName: String?,
         notes: String?,
         minimumIntervalEnabled: Bool,
-        minimumIntervalMinutes: Int?
+        minimumIntervalMinutes: Int?,
+        reminderEnabled: Bool,
+        reminderHour: Int,
+        reminderMinute: Int,
+        reminderDays: Set<Weekday>
     ) {
         guard let index = bottles.firstIndex(where: { $0.id == id }) else { return }
 
@@ -110,13 +123,20 @@ final class AppStore: ObservableObject {
         bottles[index].notes = notes?.nilIfBlank
         bottles[index].minimumIntervalEnabled = minimumIntervalEnabled
         bottles[index].minimumIntervalMinutes = minimumIntervalEnabled ? minimumIntervalMinutes : nil
+        bottles[index].reminderEnabled = reminderEnabled
+        bottles[index].reminderHour = reminderHour
+        bottles[index].reminderMinute = reminderMinute
+        bottles[index].reminderDays = reminderDays
         bottles[index].updatedAt = Date()
+
+        scheduleReminderIfNeeded(for: bottles[index])
     }
 
     func archiveBottle(id: UUID) {
         guard let index = bottles.firstIndex(where: { $0.id == id }) else { return }
         bottles[index].isArchived = true
         bottles[index].updatedAt = Date()
+        NotificationManager.cancelReminder(for: id)
     }
 
     func deleteOpening(_ event: OpeningEvent) {
@@ -149,12 +169,25 @@ final class AppStore: ObservableObject {
         UserDefaults.standard.set(data, forKey: storageKey)
     }
 
+    private func scheduleReminderIfNeeded(for bottle: Bottle) {
+        Task {
+            if bottle.reminderEnabled {
+                await NotificationManager.rescheduleReminder(for: bottle)
+            } else {
+                NotificationManager.cancelReminder(for: bottle.id)
+            }
+        }
+    }
+
     static let preview: AppStore = {
         let morning = Bottle(
             nickname: "Morning bottle",
             medicationName: "Vitamin D",
             minimumIntervalEnabled: true,
-            minimumIntervalMinutes: 240
+            minimumIntervalMinutes: 240,
+            reminderEnabled: true,
+            reminderHour: 8,
+            reminderMinute: 0
         )
         let evening = Bottle(
             nickname: "Evening bottle",
