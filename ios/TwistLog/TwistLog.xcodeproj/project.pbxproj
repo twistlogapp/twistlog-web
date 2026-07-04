@@ -18,6 +18,7 @@
 		292E6D9A2FF99F75009ADF38 /* AppStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 292E6D882FF99F75009ADF38 /* AppStore.swift */; };
 		292E6D9B2FF99F75009ADF38 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 292E6D8F2FF99F75009ADF38 /* Theme.swift */; };
 		292E6D9C2FF99F75009ADF38 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 292E6D8A2FF99F75009ADF38 /* Models.swift */; };
+		14E1A582F6790EBF54DA23A5 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5CEB4C020B299823957BA2D /* NotificationManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -26,6 +27,7 @@
 		292E6D882FF99F75009ADF38 /* AppStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppStore.swift; path = "/Users/pkoppu/code/TwistLog/ios/twistlog-ios-mvp-build/SwiftUI-Skeleton/TwistLog/AppStore.swift"; sourceTree = "<absolute>"; };
 		292E6D892FF99F75009ADF38 /* BottleDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = BottleDetailView.swift; path = "/Users/pkoppu/code/TwistLog/ios/twistlog-ios-mvp-build/SwiftUI-Skeleton/TwistLog/BottleDetailView.swift"; sourceTree = "<absolute>"; };
 		292E6D8A2FF99F75009ADF38 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Models.swift; path = "/Users/pkoppu/code/TwistLog/ios/twistlog-ios-mvp-build/SwiftUI-Skeleton/TwistLog/Models.swift"; sourceTree = "<absolute>"; };
+		B5CEB4C020B299823957BA2D /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NotificationManager.swift; path = "/Users/pkoppu/code/TwistLog/ios/twistlog-ios-mvp-build/SwiftUI-Skeleton/TwistLog/NotificationManager.swift"; sourceTree = "<absolute>"; };
 		292E6D8B2FF99F75009ADF38 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OnboardingView.swift; path = "/Users/pkoppu/code/TwistLog/ios/twistlog-ios-mvp-build/SwiftUI-Skeleton/TwistLog/OnboardingView.swift"; sourceTree = "<absolute>"; };
 		292E6D8C2FF99F75009ADF38 /* OpeningHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OpeningHistoryView.swift; path = "/Users/pkoppu/code/TwistLog/ios/twistlog-ios-mvp-build/SwiftUI-Skeleton/TwistLog/OpeningHistoryView.swift"; sourceTree = "<absolute>"; };
 		292E6D8D2FF99F75009ADF38 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RootView.swift; path = "/Users/pkoppu/code/TwistLog/ios/twistlog-ios-mvp-build/SwiftUI-Skeleton/TwistLog/RootView.swift"; sourceTree = "<absolute>"; };
@@ -61,6 +63,7 @@
 				292E6D882FF99F75009ADF38 /* AppStore.swift */,
 				292E6D892FF99F75009ADF38 /* BottleDetailView.swift */,
 				292E6D8A2FF99F75009ADF38 /* Models.swift */,
+				B5CEB4C020B299823957BA2D /* NotificationManager.swift */,
 				292E6D8B2FF99F75009ADF38 /* OnboardingView.swift */,
 				292E6D8C2FF99F75009ADF38 /* OpeningHistoryView.swift */,
 				292E6D8D2FF99F75009ADF38 /* RootView.swift */,
@@ -167,6 +170,7 @@
 				292E6D9A2FF99F75009ADF38 /* AppStore.swift in Sources */,
 				292E6D9B2FF99F75009ADF38 /* Theme.swift in Sources */,
 				292E6D9C2FF99F75009ADF38 /* Models.swift in Sources */,
+				14E1A582F6790EBF54DA23A5 /* NotificationManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
