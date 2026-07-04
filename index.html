@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="TwistLog is a reusable smart ring for prescription bottles that records bottle-opening events and supports reminder routines." />
-  <title>TwistLog | Smart Bottle Opening Log</title>
+  <meta name="description" content="TwistLog is a simple bottle-opening tracker for logging medication bottle activity, checking recent history, and supporting reminder routines." />
+  <title>TwistLog | Medication Bottle Opening Tracker</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -827,45 +827,45 @@
     <section class="hero" aria-labelledby="hero-title">
       <div class="hero-inner">
         <div>
-          <div class="eyebrow">Prototype in progress</div>
-          <h1 id="hero-title">No more guessing at the <span>bottle</span>.</h1>
-          <p class="hero-copy">TwistLog is a reusable smart ring for prescription bottles. It records cap-opening events so you can check recent activity before opening the bottle again.</p>
+          <div class="eyebrow">iOS tracker in development</div>
+          <h1 id="hero-title">Track when the <span>bottle</span> was opened.</h1>
+          <p class="hero-copy">TwistLog helps you log bottle-opening moments, check recent activity, and get reminder nudges on iPhone and Apple Watch. Optional hardware detection is in prototype.</p>
           <div class="hero-actions">
             <a class="button" href="#waitlist">Get early access</a>
             <a class="button secondary" href="#how">How it works</a>
           </div>
           <div class="hero-notes" aria-label="Product highlights">
             <div class="note">
-              <span class="note-icon" aria-hidden="true">LOG</span>
-              <strong>Passive by design</strong>
-              <span>A bottle opening is logged from the ring, without opening the app first.</span>
+              <span class="note-icon" aria-hidden="true">TAP</span>
+              <strong>Manual opening log</strong>
+              <span>Tap when a bottle is opened so the moment is saved in your history.</span>
             </div>
             <div class="note">
-              <span class="note-icon" aria-hidden="true">FIT</span>
-              <strong>Retrofit hardware</strong>
-              <span>Built for the prescription bottles people already use at home.</span>
+              <span class="note-icon" aria-hidden="true">LOG</span>
+              <strong>Recent activity</strong>
+              <span>Check when a bottle was last opened before you open it again.</span>
             </div>
             <div class="note">
               <span class="note-icon" aria-hidden="true">APP</span>
-              <strong>Watch-friendly</strong>
-              <span>Designed for timely iPhone and Apple Watch reminders.</span>
+              <strong>Reminder nudges</strong>
+              <span>Designed for timely iPhone and Apple Watch routine reminders.</span>
             </div>
           </div>
         </div>
 
-        <div class="product-stage" aria-label="Illustration of TwistLog ring on a prescription bottle">
+        <div class="product-stage" aria-label="Illustration of TwistLog prototype ring on a prescription bottle">
           <div class="bottle">
             <div class="ring"><span class="sensor-dot"></span></div>
             <div class="label">
-              <div class="small">Prescription bottle</div>
-              <div class="med">TwistLog Ring</div>
+              <div class="small">Prototype hardware</div>
+              <div class="med">Optional Ring</div>
               <div class="line"></div>
               <div class="line short"></div>
             </div>
           </div>
           <div class="event-card" aria-label="Bottle opening event">
-            <strong>Bottle opened</strong>
-            <span>Today at 8:14 AM</span>
+            <strong>Opened now</strong>
+            <span>Saved at 8:14 AM</span>
           </div>
         </div>
       </div>
@@ -876,7 +876,7 @@
         <div class="section-header">
           <div class="section-kicker">The daily gap</div>
           <h2 id="problem-title">Most reminders still depend on memory.</h2>
-          <p>Pill organizers, phone alarms, and app checklists can all be useful. But they still ask a person to prepare, remember, dismiss, or self-report. TwistLog starts from the physical action that already happens: opening the bottle.</p>
+          <p>Pill organizers, phone alarms, and app checklists can all be useful. But they still ask a person to prepare, remember, dismiss, or self-report. TwistLog starts with a simple bottle-opening history that can work before hardware automation is ready.</p>
         </div>
         <div class="reason-list">
           <div class="problem-card">
@@ -885,15 +885,15 @@
           </div>
           <div class="reason">
             <h3>No new container routine</h3>
-            <p>The ring is designed to work around existing prescription bottles instead of replacing the entire setup with a countertop dispenser.</p>
+            <p>The app is designed around the prescription bottles people already use instead of requiring a countertop dispenser or pill transfer.</p>
           </div>
           <div class="reason">
-            <h3>Less manual self-reporting</h3>
-            <p>The app can still offer fallback logging, but the primary signal is the twist/opening event from the bottle hardware.</p>
+            <h3>Fast manual logging first</h3>
+            <p>The first version can focus on a quick "Opened now" action, recent history, and reminders while hardware detection is tested.</p>
           </div>
           <div class="reason">
             <h3>Per-bottle history</h3>
-            <p>Each ring can be assigned to a specific bottle, making the log more useful than a generic reminder being dismissed.</p>
+            <p>Each tracked bottle can have its own reminder routine and opening history, making the log more useful than a generic alarm being dismissed.</p>
           </div>
         </div>
       </div>
@@ -903,28 +903,28 @@
       <div class="section-header">
         <div class="section-kicker">How it works</div>
         <h2 id="how-title">A simple loop for a high-stress moment.</h2>
-        <p>TwistLog is being designed as a hardware-plus-app system: ring events become clean app logs, and the app turns those logs into useful reminders and history.</p>
+        <p>TwistLog starts as a simple app loop: log the opening, check history, and use reminders when routines get fuzzy. Prototype hardware can later make the opening log automatic.</p>
       </div>
       <div class="steps">
         <article class="step">
-          <div class="step-icon" aria-hidden="true">Fit</div>
-          <h3>Snap on the ring</h3>
-          <p>Place TwistLog around a compatible prescription bottle neck and assign it to that medication in the app.</p>
+          <div class="step-icon" aria-hidden="true">Tap</div>
+          <h3>Tap Opened now</h3>
+          <p>When a bottle is opened, save the moment quickly in the TwistLog app.</p>
         </article>
         <article class="step">
-          <div class="step-icon" aria-hidden="true">Open</div>
-          <h3>Detect the twist</h3>
-          <p>The sensor watches for the bottle-opening motion and sends the event to the companion app.</p>
-        </article>
-        <article class="step">
-          <div class="step-icon" aria-hidden="true">Log</div>
-          <h3>Log the opening</h3>
-          <p>The app stores the event time so you can check whether the bottle was opened during the expected window.</p>
+          <div class="step-icon" aria-hidden="true">Check</div>
+          <h3>Check recent history</h3>
+          <p>See when the bottle was last opened before deciding what to do next.</p>
         </article>
         <article class="step">
           <div class="step-icon" aria-hidden="true">Nudge</div>
-          <h3>Nudge when needed</h3>
-          <p>If a scheduled bottle has not been opened, TwistLog can support iPhone and Apple Watch reminders.</p>
+          <h3>Get reminder nudges</h3>
+          <p>Use iPhone and Apple Watch reminders for routines that are easy to miss.</p>
+        </article>
+        <article class="step">
+          <div class="step-icon" aria-hidden="true">Proto</div>
+          <h3>Test optional hardware</h3>
+          <p>A prototype ring is being explored to detect bottle openings automatically later.</p>
         </article>
       </div>
     </section>
@@ -947,9 +947,9 @@
         <article class="compare-card featured">
           <h3>TwistLog</h3>
           <ul>
-            <li>Tracks bottle-opening events</li>
-            <li>Works with existing routines</li>
-            <li>Designed for per-bottle history and reminders</li>
+            <li>Quick bottle-opening log</li>
+            <li>Works with existing bottles and routines</li>
+            <li>Optional ring detection in prototype</li>
           </ul>
         </article>
         <article class="compare-card">
@@ -993,7 +993,7 @@
           <div>
             <div class="section-kicker">Early access</div>
             <h2 id="waitlist-title">Join the waitlist.</h2>
-            <p>Join the TwistLog waitlist for build updates, early testing opportunities, and launch timing. No spam, no daily drip campaign.</p>
+            <p>Join for early access to the iOS tracker, prototype hardware updates, and launch timing. No spam, no daily drip campaign.</p>
           </div>
           <form class="signup-form" id="signupForm" onsubmit="handleSubmit(event)">
             <div class="input-row">
