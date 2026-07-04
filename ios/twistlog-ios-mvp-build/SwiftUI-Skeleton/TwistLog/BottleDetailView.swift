@@ -37,6 +37,7 @@ struct BottleDetailView: View {
                             Label("Opened now", systemImage: "plus.circle.fill")
                         }
                         .tint(TLTheme.green)
+                        .accessibilityLabel("Record opening for \(bottle.nickname)")
 
                         if showSuccess {
                             Label("Opening recorded.", systemImage: "checkmark.circle.fill")
@@ -72,7 +73,7 @@ struct BottleDetailView: View {
                     Section("Recent openings") {
                         let events = store.recentOpenings(for: bottle, limit: 10)
                         if events.isEmpty {
-                            Text("Opening history will appear here.")
+                            Text("No openings recorded yet. Tap Opened now to start this bottle's history.")
                                 .foregroundStyle(TLTheme.gray)
                         } else {
                             ForEach(events) { event in

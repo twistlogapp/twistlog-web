@@ -7,10 +7,12 @@ struct OpeningHistoryView: View {
         NavigationStack {
             Group {
                 if store.openingEvents.isEmpty {
-                    ContentUnavailableView(
-                        "Opening history will appear here.",
+                    EmptyStateView(
                         systemImage: "clock",
-                        description: Text("Record an opening from Today to start your history.")
+                        title: "No openings recorded yet",
+                        message: "Tap Opened now from a bottle to start your opening history.",
+                        buttonTitle: nil,
+                        action: nil
                     )
                 } else {
                     List {
@@ -40,6 +42,7 @@ struct OpeningRow: View {
         HStack(alignment: .top, spacing: 12) {
             OrangeEventDot()
                 .padding(.top, 6)
+                .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 3) {
                 if let bottleName {
@@ -56,6 +59,6 @@ struct OpeningRow: View {
             }
         }
         .padding(.vertical, 4)
+        .accessibilityElement(children: .combine)
     }
 }
-

@@ -9,11 +9,14 @@ struct TodayView: View {
         NavigationStack {
             Group {
                 if store.activeBottles.isEmpty {
-                    ContentUnavailableView(
-                        "Add a bottle to get started.",
+                    EmptyStateView(
                         systemImage: "pills",
-                        description: Text("TwistLog will show recent openings and reminder status here.")
-                    )
+                        title: "No bottles yet",
+                        message: "Add your first bottle to start recording openings and reminders.",
+                        buttonTitle: "Add Bottle"
+                    ) {
+                        showingAddBottle = true
+                    }
                 } else {
                     ScrollView {
                         LazyVStack(spacing: 14) {
@@ -71,10 +74,13 @@ struct BottleCard: View {
 
             HStack(spacing: 8) {
                 OrangeEventDot()
+                    .accessibilityHidden(true)
                 Text(lastOpeningText)
                     .font(.subheadline)
                     .foregroundStyle(TLTheme.gray)
             }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel(lastOpeningText)
 
             if bottle.reminderEnabled {
                 Label(reminderSummary, systemImage: "bell")
@@ -101,12 +107,14 @@ struct BottleCard: View {
                 }
                 .buttonStyle(.borderedProminent)
                 .tint(TLTheme.green)
+                .accessibilityLabel("Record opening for \(bottle.nickname)")
 
                 NavigationLink("Details") {
                     BottleDetailView(bottleId: bottle.id)
                 }
                 .buttonStyle(.bordered)
                 .tint(TLTheme.green)
+                .accessibilityLabel("View details for \(bottle.nickname)")
             }
         }
         .padding(16)
@@ -172,6 +180,50 @@ struct BottleCard: View {
         store.recordOpening(for: bottle)
         showSuccess = true
         UINotificationFeedbackGenerator().notificationOccurred(.success)
+    }
+}
+
+struct EmptyStateView: View {
+    var systemImage: String
+    var title: String
+    var message: String
+    var buttonTitle: String?
+    var action: (() -> Void)?
+
+    var body: some View {
+        VStack(spacing: 16) {
+            Image(systemName: systemImage)
+                .font(.system(size: 42, weight: .semibold))
+                .foregroundStyle(TLTheme.green)
+                .accessibilityHidden(true)
+
+            VStack(spacing: 6) {
+                Text(title)
+                    .font(.title3.weight(.bold))
+                    .foregroundStyle(TLTheme.text)
+                    .multilineTextAlignment(.center)
+
+                Text(message)
+                    .font(.body)
+                    .foregroundStyle(TLTheme.gray)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            if let buttonTitle, let action {
+                Button(action: action) {
+                    Text(buttonTitle)
+                        .font(.headline)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(TLTheme.green)
+                .controlSize(.large)
+                .accessibilityLabel(buttonTitle)
+            }
+        }
+        .padding(28)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(TLTheme.lightGray.opacity(0.45))
     }
 }
 

@@ -16,6 +16,6 @@ struct OrangeEventDot: View {
             .fill(TLTheme.orange)
             .frame(width: size, height: size)
             .accessibilityLabel("Opening recorded")
+            .accessibilityAddTraits(.isImage)
     }
 }
-
