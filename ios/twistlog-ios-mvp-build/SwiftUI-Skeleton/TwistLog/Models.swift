@@ -1,6 +1,6 @@
 import Foundation
 
-struct Bottle: Identifiable, Hashable {
+struct Bottle: Identifiable, Hashable, Codable {
     var id = UUID()
     var nickname: String
     var medicationName: String? = nil
@@ -12,7 +12,7 @@ struct Bottle: Identifiable, Hashable {
     var isArchived = false
 }
 
-struct OpeningEvent: Identifiable, Hashable {
+struct OpeningEvent: Identifiable, Hashable, Codable {
     var id = UUID()
     var bottleId: UUID
     var openedAt: Date
@@ -40,7 +40,7 @@ enum OpeningSource: String, CaseIterable, Codable {
     }
 }
 
-struct ReminderSchedule: Identifiable, Hashable {
+struct ReminderSchedule: Identifiable, Hashable, Codable {
     var id = UUID()
     var bottleId: UUID
     var enabled = false
