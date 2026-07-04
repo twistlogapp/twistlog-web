@@ -4,18 +4,42 @@ import SwiftUI
 
 @MainActor
 final class AppStore: ObservableObject {
-    @Published var bottles: [Bottle]
-    @Published var openingEvents: [OpeningEvent]
-    @Published var hasCompletedOnboarding: Bool
+    @Published var bottles: [Bottle] {
+        didSet { save() }
+    }
+    @Published var openingEvents: [OpeningEvent] {
+        didSet { save() }
+    }
+    @Published var hasCompletedOnboarding: Bool {
+        didSet { save() }
+    }
+
+    private let storageKey = "twistlog.appState.v1"
+    private var isLoading = false
 
     init(
         bottles: [Bottle] = [],
         openingEvents: [OpeningEvent] = [],
-        hasCompletedOnboarding: Bool = false
+        hasCompletedOnboarding: Bool = false,
+        loadSavedState: Bool = true
     ) {
         self.bottles = bottles
         self.openingEvents = openingEvents
         self.hasCompletedOnboarding = hasCompletedOnboarding
+
+        if loadSavedState {
+            load()
+        }
+    }
+
+    var activeBottles: [Bottle] {
+        bottles
+            .filter { !$0.isArchived }
+            .sorted { $0.createdAt < $1.createdAt }
+    }
+
+    func bottle(id: UUID) -> Bottle? {
+        bottles.first { $0.id == id }
     }
 
     func lastOpening(for bottle: Bottle) -> OpeningEvent? {
@@ -54,14 +78,76 @@ final class AppStore: ObservableObject {
         )
     }
 
-    func addBottle(nickname: String, medicationName: String?, notes: String?) {
+    func addBottle(
+        nickname: String,
+        medicationName: String?,
+        notes: String?,
+        minimumIntervalEnabled: Bool,
+        minimumIntervalMinutes: Int?
+    ) {
         bottles.append(
             Bottle(
                 nickname: nickname,
                 medicationName: medicationName?.nilIfBlank,
-                notes: notes?.nilIfBlank
+                notes: notes?.nilIfBlank,
+                minimumIntervalEnabled: minimumIntervalEnabled,
+                minimumIntervalMinutes: minimumIntervalEnabled ? minimumIntervalMinutes : nil
             )
         )
+    }
+
+    func updateBottle(
+        id: UUID,
+        nickname: String,
+        medicationName: String?,
+        notes: String?,
+        minimumIntervalEnabled: Bool,
+        minimumIntervalMinutes: Int?
+    ) {
+        guard let index = bottles.firstIndex(where: { $0.id == id }) else { return }
+
+        bottles[index].nickname = nickname
+        bottles[index].medicationName = medicationName?.nilIfBlank
+        bottles[index].notes = notes?.nilIfBlank
+        bottles[index].minimumIntervalEnabled = minimumIntervalEnabled
+        bottles[index].minimumIntervalMinutes = minimumIntervalEnabled ? minimumIntervalMinutes : nil
+        bottles[index].updatedAt = Date()
+    }
+
+    func archiveBottle(id: UUID) {
+        guard let index = bottles.firstIndex(where: { $0.id == id }) else { return }
+        bottles[index].isArchived = true
+        bottles[index].updatedAt = Date()
+    }
+
+    func deleteOpening(_ event: OpeningEvent) {
+        openingEvents.removeAll { $0.id == event.id }
+    }
+
+    private func load() {
+        isLoading = true
+        defer { isLoading = false }
+
+        guard let data = UserDefaults.standard.data(forKey: storageKey),
+              let state = try? JSONDecoder().decode(PersistedAppState.self, from: data)
+        else { return }
+
+        bottles = state.bottles
+        openingEvents = state.openingEvents
+        hasCompletedOnboarding = state.hasCompletedOnboarding
+    }
+
+    private func save() {
+        guard !isLoading else { return }
+
+        let state = PersistedAppState(
+            bottles: bottles,
+            openingEvents: openingEvents,
+            hasCompletedOnboarding: hasCompletedOnboarding
+        )
+
+        guard let data = try? JSONEncoder().encode(state) else { return }
+        UserDefaults.standard.set(data, forKey: storageKey)
     }
 
     static let preview: AppStore = {
@@ -89,9 +175,16 @@ final class AppStore: ObservableObject {
                     source: .manual
                 )
             ],
-            hasCompletedOnboarding: true
+            hasCompletedOnboarding: true,
+            loadSavedState: false
         )
     }()
+}
+
+private struct PersistedAppState: Codable {
+    var bottles: [Bottle]
+    var openingEvents: [OpeningEvent]
+    var hasCompletedOnboarding: Bool
 }
 
 private extension String {
@@ -100,4 +193,3 @@ private extension String {
         return trimmed.isEmpty ? nil : trimmed
     }
 }
-

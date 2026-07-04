@@ -4,9 +4,22 @@ struct AddBottleView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var store: AppStore
 
-    @State private var nickname = ""
-    @State private var medicationName = ""
-    @State private var notes = ""
+    private let bottle: Bottle?
+
+    @State private var nickname: String
+    @State private var medicationName: String
+    @State private var notes: String
+    @State private var minimumIntervalEnabled: Bool
+    @State private var minimumIntervalMinutes: Int
+
+    init(bottle: Bottle? = nil) {
+        self.bottle = bottle
+        _nickname = State(initialValue: bottle?.nickname ?? "")
+        _medicationName = State(initialValue: bottle?.medicationName ?? "")
+        _notes = State(initialValue: bottle?.notes ?? "")
+        _minimumIntervalEnabled = State(initialValue: bottle?.minimumIntervalEnabled ?? false)
+        _minimumIntervalMinutes = State(initialValue: bottle?.minimumIntervalMinutes ?? 240)
+    }
 
     var body: some View {
         NavigationStack {
@@ -18,12 +31,24 @@ struct AddBottleView: View {
                         .lineLimit(3, reservesSpace: true)
                 }
 
-                Section("Later") {
-                    Text("Reminder schedule and minimum time between openings are planned for the next build step.")
-                        .foregroundStyle(TLTheme.gray)
+                Section {
+                    Toggle("Minimum time between openings", isOn: $minimumIntervalEnabled)
+
+                    if minimumIntervalEnabled {
+                        Stepper(value: $minimumIntervalMinutes, in: 15...1440, step: 15) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Warn if opened again within")
+                                Text(intervalLabel)
+                                    .font(.caption)
+                                    .foregroundStyle(TLTheme.gray)
+                            }
+                        }
+                    }
+                } footer: {
+                    Text("This only warns about recent bottle openings. TwistLog does not verify that medicine was taken.")
                 }
             }
-            .navigationTitle("Add Bottle")
+            .navigationTitle(bottle == nil ? "Add Bottle" : "Edit Bottle")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -34,16 +59,52 @@ struct AddBottleView: View {
 
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
-                        store.addBottle(
-                            nickname: nickname,
-                            medicationName: medicationName,
-                            notes: notes
-                        )
+                        save()
                         dismiss()
                     }
-                    .disabled(nickname.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    .disabled(trimmedNickname.isEmpty)
                 }
             }
+        }
+    }
+
+    private var trimmedNickname: String {
+        nickname.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private var intervalLabel: String {
+        if minimumIntervalMinutes < 60 {
+            return "\(minimumIntervalMinutes) minutes"
+        }
+
+        let hours = minimumIntervalMinutes / 60
+        let minutes = minimumIntervalMinutes % 60
+
+        if minutes == 0 {
+            return hours == 1 ? "1 hour" : "\(hours) hours"
+        }
+
+        return "\(hours) hr \(minutes) min"
+    }
+
+    private func save() {
+        if let bottle {
+            store.updateBottle(
+                id: bottle.id,
+                nickname: trimmedNickname,
+                medicationName: medicationName,
+                notes: notes,
+                minimumIntervalEnabled: minimumIntervalEnabled,
+                minimumIntervalMinutes: minimumIntervalMinutes
+            )
+        } else {
+            store.addBottle(
+                nickname: trimmedNickname,
+                medicationName: medicationName,
+                notes: notes,
+                minimumIntervalEnabled: minimumIntervalEnabled,
+                minimumIntervalMinutes: minimumIntervalMinutes
+            )
         }
     }
 }

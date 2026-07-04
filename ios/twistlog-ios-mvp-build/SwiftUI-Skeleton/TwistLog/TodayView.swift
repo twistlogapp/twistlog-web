@@ -8,7 +8,7 @@ struct TodayView: View {
     var body: some View {
         NavigationStack {
             Group {
-                if store.bottles.isEmpty {
+                if store.activeBottles.isEmpty {
                     ContentUnavailableView(
                         "Add a bottle to get started.",
                         systemImage: "pills",
@@ -17,7 +17,7 @@ struct TodayView: View {
                 } else {
                     ScrollView {
                         LazyVStack(spacing: 14) {
-                            ForEach(store.bottles.filter { !$0.isArchived }) { bottle in
+                            ForEach(store.activeBottles) { bottle in
                                 BottleCard(bottle: bottle)
                             }
                         }
@@ -97,7 +97,7 @@ struct BottleCard: View {
                 .tint(TLTheme.green)
 
                 NavigationLink("Details") {
-                    BottleDetailView(bottle: bottle)
+                    BottleDetailView(bottleId: bottle.id)
                 }
                 .buttonStyle(.bordered)
                 .tint(TLTheme.green)

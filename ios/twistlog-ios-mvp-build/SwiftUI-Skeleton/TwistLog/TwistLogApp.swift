@@ -2,7 +2,7 @@ import SwiftUI
 
 @main
 struct TwistLogApp: App {
-    @StateObject private var store = AppStore.preview
+    @StateObject private var store = AppStore()
 
     var body: some Scene {
         WindowGroup {
@@ -11,4 +11,3 @@ struct TwistLogApp: App {
         }
     }
 }
-
