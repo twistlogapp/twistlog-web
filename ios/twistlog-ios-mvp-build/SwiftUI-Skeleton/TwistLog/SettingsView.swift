@@ -4,6 +4,7 @@ import UserNotifications
 
 struct SettingsView: View {
     @State private var notificationStatus: UNAuthorizationStatus = .notDetermined
+    private let reminderScheduler: ReminderScheduling = NotificationManager.liveScheduler
 
     var body: some View {
         NavigationStack {
@@ -18,11 +19,20 @@ struct SettingsView: View {
 
                     Button {
                         Task {
-                            _ = await NotificationManager.requestAuthorization()
+                            _ = await reminderScheduler.requestAuthorization()
                             await refreshNotificationStatus()
                         }
                     } label: {
                         Label("Enable reminder notifications", systemImage: "bell.badge")
+                    }
+
+                    Button {
+                        Task {
+                            await reminderScheduler.scheduleTestReminder()
+                            await refreshNotificationStatus()
+                        }
+                    } label: {
+                        Label("Send test reminder in 10 seconds", systemImage: "bell.and.waves.left.and.right")
                     }
 
                     Button {
@@ -69,7 +79,7 @@ struct SettingsView: View {
     }
 
     private func refreshNotificationStatus() async {
-        notificationStatus = await NotificationManager.authorizationStatus()
+        notificationStatus = await reminderScheduler.authorizationStatus()
     }
 
     private func openAppSettings() {
@@ -77,4 +87,3 @@ struct SettingsView: View {
         UIApplication.shared.open(url)
     }
 }
-

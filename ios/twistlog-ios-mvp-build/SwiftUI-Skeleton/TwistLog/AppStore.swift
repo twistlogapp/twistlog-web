@@ -15,17 +15,20 @@ final class AppStore: ObservableObject {
     }
 
     private let storageKey = "twistlog.appState.v1"
+    private let reminderScheduler: ReminderScheduling
     private var isLoading = false
 
     init(
         bottles: [Bottle] = [],
         openingEvents: [OpeningEvent] = [],
         hasCompletedOnboarding: Bool = false,
-        loadSavedState: Bool = true
+        loadSavedState: Bool = true,
+        reminderScheduler: ReminderScheduling = NotificationManager.liveScheduler
     ) {
         self.bottles = bottles
         self.openingEvents = openingEvents
         self.hasCompletedOnboarding = hasCompletedOnboarding
+        self.reminderScheduler = reminderScheduler
 
         if loadSavedState {
             load()
@@ -137,7 +140,7 @@ final class AppStore: ObservableObject {
         guard let index = bottles.firstIndex(where: { $0.id == id }) else { return }
         bottles[index].isArchived = true
         bottles[index].updatedAt = Date()
-        NotificationManager.cancelReminder(for: id)
+        reminderScheduler.cancelReminder(for: id)
     }
 
     func deleteOpening(_ event: OpeningEvent) {
@@ -173,9 +176,9 @@ final class AppStore: ObservableObject {
     private func scheduleReminderIfNeeded(for bottle: Bottle) {
         Task {
             if bottle.reminderEnabled {
-                await NotificationManager.rescheduleReminder(for: bottle)
+                await reminderScheduler.rescheduleReminder(for: bottle)
             } else {
-                NotificationManager.cancelReminder(for: bottle.id)
+                reminderScheduler.cancelReminder(for: bottle.id)
             }
         }
     }
@@ -209,7 +212,8 @@ final class AppStore: ObservableObject {
                 )
             ],
             hasCompletedOnboarding: true,
-            loadSavedState: false
+            loadSavedState: false,
+            reminderScheduler: NoOpReminderScheduler()
         )
     }()
 }
