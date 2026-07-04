@@ -11,6 +11,9 @@ struct AddBottleView: View {
     @State private var notes: String
     @State private var minimumIntervalEnabled: Bool
     @State private var minimumIntervalMinutes: Int
+    @State private var reminderEnabled: Bool
+    @State private var reminderTime: Date
+    @State private var reminderDays: Set<Weekday>
 
     init(bottle: Bottle? = nil) {
         self.bottle = bottle
@@ -19,6 +22,9 @@ struct AddBottleView: View {
         _notes = State(initialValue: bottle?.notes ?? "")
         _minimumIntervalEnabled = State(initialValue: bottle?.minimumIntervalEnabled ?? false)
         _minimumIntervalMinutes = State(initialValue: bottle?.minimumIntervalMinutes ?? 240)
+        _reminderEnabled = State(initialValue: bottle?.reminderEnabled ?? false)
+        _reminderTime = State(initialValue: Self.reminderDate(hour: bottle?.reminderHour ?? 8, minute: bottle?.reminderMinute ?? 0))
+        _reminderDays = State(initialValue: bottle?.reminderDays ?? Set(Weekday.allCases))
     }
 
     var body: some View {
@@ -29,6 +35,43 @@ struct AddBottleView: View {
                     TextField("Medication name (optional)", text: $medicationName)
                     TextField("Notes", text: $notes, axis: .vertical)
                         .lineLimit(3, reservesSpace: true)
+                }
+
+                Section {
+                    Toggle("Reminder", isOn: $reminderEnabled)
+
+                    if reminderEnabled {
+                        DatePicker("Reminder time", selection: $reminderTime, displayedComponents: .hourAndMinute)
+
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("Reminder days")
+                                .font(.subheadline)
+                                .foregroundStyle(TLTheme.gray)
+
+                            HStack(spacing: 6) {
+                                ForEach(Weekday.allCases, id: \.self) { weekday in
+                                    Button {
+                                        toggleWeekday(weekday)
+                                    } label: {
+                                        Text(weekday.shortName)
+                                            .font(.caption.weight(.semibold))
+                                            .frame(maxWidth: .infinity)
+                                    }
+                                    .buttonStyle(.bordered)
+                                    .tint(reminderDays.contains(weekday) ? TLTheme.green : TLTheme.gray)
+                                }
+                            }
+                        }
+                        .padding(.vertical, 4)
+
+                        Text("Notification copy: Reminder: check your bottle.")
+                            .font(.caption)
+                            .foregroundStyle(TLTheme.gray)
+                    }
+                } header: {
+                    Text("Reminder")
+                } footer: {
+                    Text("Reminders are local to this iPhone. TwistLog reminds you to check a bottle; it does not confirm medicine was taken.")
                 }
 
                 Section {
@@ -62,7 +105,7 @@ struct AddBottleView: View {
                         save()
                         dismiss()
                     }
-                    .disabled(trimmedNickname.isEmpty)
+                    .disabled(trimmedNickname.isEmpty || (reminderEnabled && reminderDays.isEmpty))
                 }
             }
         }
@@ -88,6 +131,10 @@ struct AddBottleView: View {
     }
 
     private func save() {
+        let components = Calendar.current.dateComponents([.hour, .minute], from: reminderTime)
+        let hour = components.hour ?? 8
+        let minute = components.minute ?? 0
+
         if let bottle {
             store.updateBottle(
                 id: bottle.id,
@@ -95,7 +142,11 @@ struct AddBottleView: View {
                 medicationName: medicationName,
                 notes: notes,
                 minimumIntervalEnabled: minimumIntervalEnabled,
-                minimumIntervalMinutes: minimumIntervalMinutes
+                minimumIntervalMinutes: minimumIntervalMinutes,
+                reminderEnabled: reminderEnabled,
+                reminderHour: hour,
+                reminderMinute: minute,
+                reminderDays: reminderDays
             )
         } else {
             store.addBottle(
@@ -103,9 +154,27 @@ struct AddBottleView: View {
                 medicationName: medicationName,
                 notes: notes,
                 minimumIntervalEnabled: minimumIntervalEnabled,
-                minimumIntervalMinutes: minimumIntervalMinutes
+                minimumIntervalMinutes: minimumIntervalMinutes,
+                reminderEnabled: reminderEnabled,
+                reminderHour: hour,
+                reminderMinute: minute,
+                reminderDays: reminderDays
             )
         }
     }
-}
 
+    private func toggleWeekday(_ weekday: Weekday) {
+        if reminderDays.contains(weekday) {
+            reminderDays.remove(weekday)
+        } else {
+            reminderDays.insert(weekday)
+        }
+    }
+
+    private static func reminderDate(hour: Int, minute: Int) -> Date {
+        var components = Calendar.current.dateComponents([.year, .month, .day], from: Date())
+        components.hour = hour
+        components.minute = minute
+        return Calendar.current.date(from: components) ?? Date()
+    }
+}

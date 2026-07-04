@@ -76,6 +76,12 @@ struct BottleCard: View {
                     .foregroundStyle(TLTheme.gray)
             }
 
+            if bottle.reminderEnabled {
+                Label(reminderSummary, systemImage: "bell")
+                    .font(.caption)
+                    .foregroundStyle(TLTheme.gray)
+            }
+
             if showSuccess {
                 Text("Opening recorded.")
                     .font(.subheadline.weight(.semibold))
@@ -144,6 +150,22 @@ struct BottleCard: View {
         }
 
         return "Recent opening"
+    }
+
+    private var reminderSummary: String {
+        let date = Calendar.current.date(from: DateComponents(hour: bottle.reminderHour, minute: bottle.reminderMinute)) ?? Date()
+        let time = date.formatted(date: .omitted, time: .shortened)
+
+        if bottle.reminderDays.count == Weekday.allCases.count {
+            return "Reminder: daily at \(time)"
+        }
+
+        let days = Weekday.allCases
+            .filter { bottle.reminderDays.contains($0) }
+            .map(\.shortName)
+            .joined(separator: ", ")
+
+        return "Reminder: \(days) at \(time)"
     }
 
     private func recordOpening() {

@@ -61,6 +61,14 @@ struct BottleDetailView: View {
                         }
                     }
 
+                    Section("Reminder") {
+                        if bottle.reminderEnabled {
+                            LabeledContent("Reminder", value: reminderSummary(for: bottle))
+                        } else {
+                            LabeledContent("Reminder", value: "Off")
+                        }
+                    }
+
                     Section("Recent openings") {
                         let events = store.recentOpenings(for: bottle, limit: 10)
                         if events.isEmpty {
@@ -167,5 +175,20 @@ struct BottleDetailView: View {
 
         return "\(hours) hr \(remainder) min"
     }
-}
 
+    private func reminderSummary(for bottle: Bottle) -> String {
+        let date = Calendar.current.date(from: DateComponents(hour: bottle.reminderHour, minute: bottle.reminderMinute)) ?? Date()
+        let time = date.formatted(date: .omitted, time: .shortened)
+
+        if bottle.reminderDays.count == Weekday.allCases.count {
+            return "Daily at \(time)"
+        }
+
+        let days = Weekday.allCases
+            .filter { bottle.reminderDays.contains($0) }
+            .map(\.shortName)
+            .joined(separator: ", ")
+
+        return "\(days) at \(time)"
+    }
+}

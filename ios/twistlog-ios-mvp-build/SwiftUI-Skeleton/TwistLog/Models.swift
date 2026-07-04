@@ -9,7 +9,93 @@ struct Bottle: Identifiable, Hashable, Codable {
     var updatedAt = Date()
     var minimumIntervalEnabled = false
     var minimumIntervalMinutes: Int?
+    var reminderEnabled = false
+    var reminderHour = 8
+    var reminderMinute = 0
+    var reminderDays: Set<Weekday> = Set(Weekday.allCases)
     var isArchived = false
+
+    init(
+        id: UUID = UUID(),
+        nickname: String,
+        medicationName: String? = nil,
+        notes: String? = nil,
+        createdAt: Date = Date(),
+        updatedAt: Date = Date(),
+        minimumIntervalEnabled: Bool = false,
+        minimumIntervalMinutes: Int? = nil,
+        reminderEnabled: Bool = false,
+        reminderHour: Int = 8,
+        reminderMinute: Int = 0,
+        reminderDays: Set<Weekday> = Set(Weekday.allCases),
+        isArchived: Bool = false
+    ) {
+        self.id = id
+        self.nickname = nickname
+        self.medicationName = medicationName
+        self.notes = notes
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt
+        self.minimumIntervalEnabled = minimumIntervalEnabled
+        self.minimumIntervalMinutes = minimumIntervalMinutes
+        self.reminderEnabled = reminderEnabled
+        self.reminderHour = reminderHour
+        self.reminderMinute = reminderMinute
+        self.reminderDays = reminderDays
+        self.isArchived = isArchived
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case nickname
+        case medicationName
+        case notes
+        case createdAt
+        case updatedAt
+        case minimumIntervalEnabled
+        case minimumIntervalMinutes
+        case reminderEnabled
+        case reminderHour
+        case reminderMinute
+        case reminderDays
+        case isArchived
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        id = try container.decodeIfPresent(UUID.self, forKey: .id) ?? UUID()
+        nickname = try container.decode(String.self, forKey: .nickname)
+        medicationName = try container.decodeIfPresent(String.self, forKey: .medicationName)
+        notes = try container.decodeIfPresent(String.self, forKey: .notes)
+        createdAt = try container.decodeIfPresent(Date.self, forKey: .createdAt) ?? Date()
+        updatedAt = try container.decodeIfPresent(Date.self, forKey: .updatedAt) ?? Date()
+        minimumIntervalEnabled = try container.decodeIfPresent(Bool.self, forKey: .minimumIntervalEnabled) ?? false
+        minimumIntervalMinutes = try container.decodeIfPresent(Int.self, forKey: .minimumIntervalMinutes)
+        reminderEnabled = try container.decodeIfPresent(Bool.self, forKey: .reminderEnabled) ?? false
+        reminderHour = try container.decodeIfPresent(Int.self, forKey: .reminderHour) ?? 8
+        reminderMinute = try container.decodeIfPresent(Int.self, forKey: .reminderMinute) ?? 0
+        reminderDays = try container.decodeIfPresent(Set<Weekday>.self, forKey: .reminderDays) ?? Set(Weekday.allCases)
+        isArchived = try container.decodeIfPresent(Bool.self, forKey: .isArchived) ?? false
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+
+        try container.encode(id, forKey: .id)
+        try container.encode(nickname, forKey: .nickname)
+        try container.encodeIfPresent(medicationName, forKey: .medicationName)
+        try container.encodeIfPresent(notes, forKey: .notes)
+        try container.encode(createdAt, forKey: .createdAt)
+        try container.encode(updatedAt, forKey: .updatedAt)
+        try container.encode(minimumIntervalEnabled, forKey: .minimumIntervalEnabled)
+        try container.encodeIfPresent(minimumIntervalMinutes, forKey: .minimumIntervalMinutes)
+        try container.encode(reminderEnabled, forKey: .reminderEnabled)
+        try container.encode(reminderHour, forKey: .reminderHour)
+        try container.encode(reminderMinute, forKey: .reminderMinute)
+        try container.encode(reminderDays, forKey: .reminderDays)
+        try container.encode(isArchived, forKey: .isArchived)
+    }
 }
 
 struct OpeningEvent: Identifiable, Hashable, Codable {
@@ -60,4 +146,16 @@ enum Weekday: Int, CaseIterable, Codable {
     case thursday
     case friday
     case saturday
+
+    var shortName: String {
+        switch self {
+        case .sunday: return "Sun"
+        case .monday: return "Mon"
+        case .tuesday: return "Tue"
+        case .wednesday: return "Wed"
+        case .thursday: return "Thu"
+        case .friday: return "Fri"
+        case .saturday: return "Sat"
+        }
+    }
 }
