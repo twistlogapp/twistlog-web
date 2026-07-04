@@ -17,13 +17,20 @@ struct SettingsView: View {
                 }
 
                 Section("About") {
-                    Label("TwistLog", systemImage: "info.circle")
-                    Label("Privacy Policy", systemImage: "hand.raised")
-                    Label("Terms", systemImage: "doc.text")
+                    Link(destination: URL(string: "https://twistlog.com")!) {
+                        Label("TwistLog", systemImage: "info.circle")
+                    }
+
+                    Link(destination: URL(string: "https://twistlog.com/privacy")!) {
+                        Label("Privacy Policy", systemImage: "hand.raised")
+                    }
+
+                    Link(destination: URL(string: "https://twistlog.com/terms")!) {
+                        Label("Terms", systemImage: "doc.text")
+                    }
                 }
             }
             .navigationTitle("Settings")
         }
     }
 }
-
