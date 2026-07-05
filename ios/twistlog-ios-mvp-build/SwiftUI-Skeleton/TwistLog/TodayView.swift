@@ -220,15 +220,11 @@ struct BottleCard: View {
                 .fill(bottle.category.accentColor)
                 .frame(width: 5)
         }
-        .confirmationDialog(
-            "Recent opening found.",
-            isPresented: $showRecentWarning,
-            titleVisibility: .visible
-        ) {
+        .alert("Recent opening found.", isPresented: $showRecentWarning) {
+            Button("Cancel", role: .cancel) {}
             Button("Record anyway", role: .destructive) {
                 recordOpening()
             }
-            Button("Cancel", role: .cancel) {}
         } message: {
             Text(recentWarningMessage)
         }

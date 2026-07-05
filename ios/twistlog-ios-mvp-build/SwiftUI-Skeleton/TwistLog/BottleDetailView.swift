@@ -138,28 +138,20 @@ struct BottleDetailView: View {
                 .sheet(isPresented: $showingEditBottle) {
                     AddBottleView(bottle: bottle)
                 }
-                .confirmationDialog(
-                    "Archive this bottle?",
-                    isPresented: $showingArchiveConfirmation,
-                    titleVisibility: .visible
-                ) {
+                .alert("Archive this bottle?", isPresented: $showingArchiveConfirmation) {
+                    Button("Cancel", role: .cancel) {}
                     Button("Archive Bottle", role: .destructive) {
                         store.archiveBottle(id: bottle.id)
                         dismiss()
                     }
-                    Button("Cancel", role: .cancel) {}
                 } message: {
                     Text("The bottle will be hidden from Today. Existing opening history will remain.")
                 }
-                .confirmationDialog(
-                    "Recent opening found.",
-                    isPresented: $showRecentWarning,
-                    titleVisibility: .visible
-                ) {
+                .alert("Recent opening found.", isPresented: $showRecentWarning) {
+                    Button("Cancel", role: .cancel) {}
                     Button("Record anyway", role: .destructive) {
                         recordOpening(for: bottle)
                     }
-                    Button("Cancel", role: .cancel) {}
                 } message: {
                     Text(recentWarningMessage(for: bottle))
                 }
