@@ -13,7 +13,7 @@ struct SettingsView: View {
                     Text("TwistLog records bottle-opening events and reminders. It does not confirm medication was taken and is not medical advice.")
                         .foregroundStyle(TLTheme.gray)
 
-                    Text("Data is stored locally on this device. TwistLog does not sync your bottle history to an account or cloud service in this MVP.")
+                    Text("Your data is stored locally on this device. TwistLog does not sync bottle history to an account or cloud service.")
                         .foregroundStyle(TLTheme.gray)
                 }
 
@@ -155,11 +155,11 @@ struct AboutView: View {
                         .foregroundStyle(TLTheme.green)
                         .fixedSize(horizontal: false, vertical: true)
 
-                    Text("TwistLog records bottle-opening events and reminders. It does not confirm medication was taken and should not be used as medical advice.")
+                    Text("TwistLog records bottle-opening events, reminders, and opening history for personal reference. It does not confirm medication was taken and is not medical advice.")
                         .foregroundStyle(TLTheme.gray)
                         .fixedSize(horizontal: false, vertical: true)
 
-                    Text("Data is stored locally on this device for the MVP.")
+                    Text("Your data is stored locally on this device.")
                         .font(.footnote)
                         .foregroundStyle(TLTheme.gray)
                         .fixedSize(horizontal: false, vertical: true)
@@ -181,12 +181,30 @@ struct AboutView: View {
                 }
             }
 
-            Section("Version") {
-                LabeledContent("App", value: "TwistLog MVP")
-                LabeledContent("Build", value: "TestFlight candidate")
+            Section("App") {
+                LabeledContent("Name", value: "TwistLog")
+                LabeledContent("Version", value: appVersion)
             }
         }
         .navigationTitle("About")
         .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private var appVersion: String {
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
+        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String
+        let cleanVersion = version?.isEmpty == false ? version : nil
+        let cleanBuild = build?.isEmpty == false ? build : nil
+
+        switch (cleanVersion, cleanBuild) {
+        case let (version?, build?):
+            return "\(version) (\(build))"
+        case let (version?, nil):
+            return version
+        case let (nil, build?):
+            return build
+        default:
+            return "1.0"
+        }
     }
 }
