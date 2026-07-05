@@ -143,18 +143,7 @@ struct AddBottleView: View {
     }
 
     private var intervalLabel: String {
-        if minimumIntervalMinutes < 60 {
-            return "\(minimumIntervalMinutes) minutes"
-        }
-
-        let hours = minimumIntervalMinutes / 60
-        let minutes = minimumIntervalMinutes % 60
-
-        if minutes == 0 {
-            return hours == 1 ? "1 hour" : "\(hours) hours"
-        }
-
-        return "\(hours) hr \(minutes) min"
+        minimumIntervalUnit.label(for: minimumIntervalValue)
     }
 
     private var normalizedReminders: [BottleReminder] {
@@ -275,6 +264,11 @@ private enum IntervalUnit: String, CaseIterable, Identifiable {
         case .days: return "day"
         case .weeks: return "week"
         }
+    }
+
+    func label(for value: Int) -> String {
+        let suffix = value == 1 ? singularTitle : "\(singularTitle)s"
+        return "\(value) \(suffix)"
     }
 
     var minuteMultiplier: Int {
