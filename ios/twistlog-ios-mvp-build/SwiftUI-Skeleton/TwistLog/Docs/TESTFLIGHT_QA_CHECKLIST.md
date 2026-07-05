@@ -6,6 +6,7 @@ Run this checklist before sharing each TestFlight build.
 
 - Fresh install opens onboarding.
 - Onboarding clearly says TwistLog records bottle openings, not medication taken.
+- Today shows a time-aware greeting, such as `Good morning`, with the current date below it.
 - Today empty state shows `No bottles yet` and the `Add Bottle` button.
 - Add a bottle with only a nickname.
 - Add a Prescription bottle with medication name, notes, minimum opening interval, and one reminder.
@@ -16,6 +17,8 @@ Run this checklist before sharing each TestFlight build.
 - Edit the bottle and add a second reminder time, for example morning and evening.
 - Edit an existing bottle's Type and confirm it moves to the correct Today section.
 - Confirm Today shows multiple reminder times.
+- Open every active bottle for today and confirm the `All bottles opened today.` banner appears.
+- Confirm the bottle list remains visible below the all-done banner.
 - Confirm Details shows the bottle Type.
 - Confirm Details lists each reminder time.
 - Confirm unopened bottles show `Not opened today` or `Not opened yet`.

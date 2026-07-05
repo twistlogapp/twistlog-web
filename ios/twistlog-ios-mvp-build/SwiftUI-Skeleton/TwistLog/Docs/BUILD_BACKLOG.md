@@ -104,6 +104,8 @@ Acceptance:
 ## Milestone 7: TestFlight Polish
 
 - Empty states.
+- Today greeting and date.
+- All-done Today banner when every active bottle has an opening today.
 - Accessibility labels.
 - Dynamic Type checks.
 - Dark mode pass.

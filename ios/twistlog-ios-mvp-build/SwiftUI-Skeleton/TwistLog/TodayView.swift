@@ -11,32 +11,32 @@ struct TodayView: View {
 
     var body: some View {
         NavigationStack {
-            Group {
-                if store.activeBottles.isEmpty {
-                    EmptyStateView(
-                        systemImage: "pills",
-                        title: "No bottles yet",
-                        message: "Add your first bottle to start recording openings and reminders.",
-                        buttonTitle: "Add Bottle"
-                    ) {
-                        showingAddBottle = true
-                    }
-                } else {
-                    ScrollView {
-                        LazyVStack(alignment: .leading, spacing: 18) {
-                            ForEach(groupedSections) { section in
-                                BottleCategorySection(
-                                    section: section,
-                                    currentDate: currentDate
-                                )
-                            }
+            ScrollView {
+                LazyVStack(alignment: .leading, spacing: 18) {
+                    TodayHeader(currentDate: currentDate)
+
+                    if store.activeBottles.isEmpty {
+                        TodayEmptyPrompt {
+                            showingAddBottle = true
                         }
-                        .padding()
+                    } else {
+                        if allBottlesOpenedToday {
+                            AllDoneBanner()
+                        }
+
+                        ForEach(groupedSections) { section in
+                            BottleCategorySection(
+                                section: section,
+                                currentDate: currentDate
+                            )
+                        }
                     }
-                    .background(TLTheme.lightGray)
                 }
+                .padding()
             }
-            .navigationTitle("Today")
+            .background(TLTheme.lightGray)
+            .navigationTitle("")
+            .navigationBarTitleDisplayMode(.inline)
             .onAppear {
                 currentDate = Date()
             }
@@ -54,6 +54,16 @@ struct TodayView: View {
             .sheet(isPresented: $showingAddBottle) {
                 AddBottleView()
             }
+        }
+    }
+
+    private var allBottlesOpenedToday: Bool {
+        let bottles = store.activeBottles
+        guard !bottles.isEmpty else { return false }
+
+        return bottles.allSatisfy { bottle in
+            guard let last = store.lastOpening(for: bottle) else { return false }
+            return Calendar.current.isDate(last.openedAt, inSameDayAs: currentDate)
         }
     }
 
@@ -90,6 +100,107 @@ struct TodayView: View {
             .min()
         }
         .min() ?? fallback
+    }
+}
+
+private struct TodayHeader: View {
+    var currentDate: Date
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(greeting)
+                .font(.largeTitle.weight(.bold))
+                .foregroundStyle(TLTheme.text)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Text(formattedDate)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(TLTheme.gray)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .combine)
+    }
+
+    private var greeting: String {
+        let hour = Calendar.current.component(.hour, from: currentDate)
+
+        switch hour {
+        case 5..<12:
+            return "Good morning"
+        case 12..<17:
+            return "Good afternoon"
+        default:
+            return "Good evening"
+        }
+    }
+
+    private var formattedDate: String {
+        currentDate.formatted(.dateTime.weekday(.wide).month(.wide).day())
+    }
+}
+
+private struct TodayEmptyPrompt: View {
+    var action: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Image(systemName: "pills")
+                .font(.system(size: 34, weight: .semibold))
+                .foregroundStyle(TLTheme.green)
+                .accessibilityHidden(true)
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text("No bottles yet")
+                    .font(.title3.weight(.bold))
+                    .foregroundStyle(TLTheme.text)
+
+                Text("Add your first bottle to start recording openings and reminders.")
+                    .font(.body)
+                    .foregroundStyle(TLTheme.gray)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Button(action: action) {
+                Text("Add Bottle")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(TLTheme.green)
+            .controlSize(.large)
+            .accessibilityLabel("Add bottle")
+        }
+        .padding(18)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(TLTheme.cardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+}
+
+private struct AllDoneBanner: View {
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: "checkmark.circle.fill")
+                .font(.title2)
+                .foregroundStyle(TLTheme.green)
+                .accessibilityHidden(true)
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text("All bottles opened today.")
+                    .font(.headline)
+                    .foregroundStyle(TLTheme.text)
+
+                Text("Great job. Your opening history is up to date.")
+                    .font(.subheadline)
+                    .foregroundStyle(TLTheme.gray)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(TLTheme.green.opacity(0.12))
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .accessibilityElement(children: .combine)
     }
 }
 

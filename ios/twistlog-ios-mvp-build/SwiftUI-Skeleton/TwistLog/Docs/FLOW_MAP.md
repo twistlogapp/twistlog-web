@@ -100,6 +100,17 @@ Skip for now
 
 Primary job: record an opening in one tap.
 
+### Header
+
+The Today screen opens with a time-aware greeting and the current date:
+
+```text
+Good morning
+Sunday, July 5
+```
+
+Do not hardcode a user name in v1. A personalized greeting can come later after the app has an explicit profile/name field.
+
 ### Empty State
 
 ```text
@@ -122,6 +133,17 @@ Today groups active bottles by type, not by separate tabs:
 3. Other
 
 Prescription stays first so important medications do not get pushed below vitamins or supplements. Sections stay on one screen so users do not have to switch tabs to see what needs attention.
+
+### All-Done State
+
+When every active bottle has an opening recorded for the current day, show a calm success banner above the bottle sections:
+
+```text
+All bottles opened today.
+Great job. Your opening history is up to date.
+```
+
+Keep the bottle list visible below the banner so users can still open Details or record another opening if needed.
 
 ### Bottle Card
 
