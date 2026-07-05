@@ -2,6 +2,7 @@ import SwiftUI
 
 struct OnboardingView: View {
     @EnvironmentObject private var store: AppStore
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var step = 0
 
     private let pages: [OnboardingPage] = [
@@ -34,45 +35,56 @@ struct OnboardingView: View {
     var body: some View {
         let page = pages[step]
 
-        VStack(alignment: .leading, spacing: 24) {
-            Spacer()
-
-            OrangeEventDot(size: 16)
-                .accessibilityHidden(true)
-
-            Text(page.eyebrow)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(TLTheme.green)
-
-            Text(page.title)
-                .font(.largeTitle.weight(.bold))
-                .foregroundStyle(TLTheme.text)
-                .minimumScaleFactor(0.85)
-
-            Text(page.body)
-                .font(.body)
-                .foregroundStyle(TLTheme.gray)
-                .lineSpacing(4)
-
-            Spacer()
-
-            Button {
-                if step < pages.count - 1 {
-                    step += 1
-                } else {
-                    store.hasCompletedOnboarding = true
+        ScrollView {
+            VStack(alignment: .leading, spacing: 24) {
+                if !dynamicTypeSize.isAccessibilitySize {
+                    Spacer(minLength: 40)
                 }
-            } label: {
-                Text(page.buttonTitle)
-                    .font(.headline)
-                    .frame(maxWidth: .infinity)
+
+                OrangeEventDot(size: 16)
+                    .accessibilityHidden(true)
+
+                Text(page.eyebrow)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(TLTheme.green)
+
+                Text(page.title)
+                    .font(.largeTitle.weight(.bold))
+                    .foregroundStyle(TLTheme.text)
+                    .minimumScaleFactor(0.85)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                Text(page.body)
+                    .font(.body)
+                    .foregroundStyle(TLTheme.gray)
+                    .lineSpacing(4)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                if !dynamicTypeSize.isAccessibilitySize {
+                    Spacer(minLength: 40)
+                }
+
+                Button {
+                    if step < pages.count - 1 {
+                        step += 1
+                    } else {
+                        store.hasCompletedOnboarding = true
+                    }
+                } label: {
+                    Text(page.buttonTitle)
+                        .font(.headline)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.85)
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(TLTheme.green)
+                .controlSize(.large)
+                .accessibilityLabel(page.buttonTitle)
             }
-            .buttonStyle(.borderedProminent)
-            .tint(TLTheme.green)
-            .controlSize(.large)
-            .accessibilityLabel(page.buttonTitle)
+            .padding(24)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding(24)
     }
 }
 

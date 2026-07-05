@@ -241,6 +241,7 @@ private struct BottleCategorySection: View {
 
 struct BottleCard: View {
     @EnvironmentObject private var store: AppStore
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     var bottle: Bottle
     var currentDate: Date
 
@@ -295,33 +296,7 @@ struct BottleCard: View {
                     .foregroundStyle(TLTheme.green)
             }
 
-            HStack {
-                Button {
-                    if store.shouldWarnRecentOpening(for: bottle) {
-                        showRecentWarning = true
-                    } else {
-                        recordOpening()
-                    }
-                } label: {
-                    Text("Opened now")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(TLTheme.green)
-                .accessibilityLabel("Record opening for \(bottle.nickname)")
-
-                NavigationLink("Details") {
-                    BottleDetailView(bottleId: bottle.id)
-                }
-                .font(.headline)
-                .padding(.horizontal, 18)
-                .padding(.vertical, 8)
-                .foregroundStyle(TLTheme.text)
-                .background(TLTheme.green.opacity(0.14))
-                .clipShape(Capsule())
-                .buttonStyle(.plain)
-                .accessibilityLabel("View details for \(bottle.nickname)")
-            }
+            actionButtons
         }
         .padding(16)
         .background(cardBackground)
@@ -338,6 +313,72 @@ struct BottleCard: View {
             }
         } message: {
             Text(recentWarningMessage)
+        }
+    }
+
+    @ViewBuilder
+    private var actionButtons: some View {
+        if dynamicTypeSize.isAccessibilitySize {
+            VStack(spacing: 10) {
+                openedNowButton
+                detailsLink
+            }
+        } else {
+            HStack {
+                openedNowButton
+                detailsLink
+            }
+        }
+    }
+
+    private var openedNowButton: some View {
+        Button {
+            if store.shouldWarnRecentOpening(for: bottle) {
+                showRecentWarning = true
+            } else {
+                recordOpening()
+            }
+        } label: {
+            Text("Opened now")
+                .lineLimit(1)
+                .minimumScaleFactor(0.85)
+                .frame(maxWidth: .infinity)
+        }
+        .buttonStyle(.borderedProminent)
+        .tint(TLTheme.green)
+        .accessibilityLabel("Record opening for \(bottle.nickname)")
+    }
+
+    private var detailsLink: some View {
+        NavigationLink {
+            BottleDetailView(bottleId: bottle.id)
+        } label: {
+            detailsLabel
+        }
+        .foregroundStyle(TLTheme.text)
+        .background(TLTheme.green.opacity(0.14))
+        .clipShape(Capsule())
+        .buttonStyle(.plain)
+        .accessibilityLabel("View details for \(bottle.nickname)")
+    }
+
+    @ViewBuilder
+    private var detailsLabel: some View {
+        if dynamicTypeSize.isAccessibilitySize {
+            Text("Details")
+                .font(.headline)
+                .lineLimit(1)
+                .minimumScaleFactor(0.85)
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, 18)
+                .padding(.vertical, 8)
+        } else {
+            Text("Details")
+                .font(.headline)
+                .lineLimit(1)
+                .minimumScaleFactor(0.85)
+                .padding(.horizontal, 18)
+                .padding(.vertical, 8)
         }
     }
 
