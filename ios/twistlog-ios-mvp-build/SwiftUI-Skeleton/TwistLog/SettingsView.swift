@@ -12,6 +12,9 @@ struct SettingsView: View {
                 Section("Safety") {
                     Text("TwistLog records bottle-opening events and reminders. It does not confirm medication was taken and is not medical advice.")
                         .foregroundStyle(TLTheme.gray)
+
+                    Text("Data is stored locally on this device. TwistLog does not sync your bottle history to an account or cloud service in this MVP.")
+                        .foregroundStyle(TLTheme.gray)
                 }
 
                 Section("Notifications") {
@@ -41,7 +44,7 @@ struct SettingsView: View {
                         Label("Open iPhone Settings", systemImage: "gearshape")
                     }
 
-                    Text("Reminder copy: Reminder: check your bottle.")
+                    Text("Reminder copy: Time to check your bottle.")
                         .font(.footnote)
                         .foregroundStyle(TLTheme.gray)
                 }
@@ -153,6 +156,11 @@ struct AboutView: View {
                         .fixedSize(horizontal: false, vertical: true)
 
                     Text("TwistLog records bottle-opening events and reminders. It does not confirm medication was taken and should not be used as medical advice.")
+                        .foregroundStyle(TLTheme.gray)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    Text("Data is stored locally on this device for the MVP.")
+                        .font(.footnote)
                         .foregroundStyle(TLTheme.gray)
                         .fixedSize(horizontal: false, vertical: true)
                 }

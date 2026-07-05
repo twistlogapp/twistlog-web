@@ -59,10 +59,37 @@ struct TodayView: View {
 
     private var groupedSections: [BottleCategoryGroup] {
         BottleCategory.allCases.compactMap { category in
-            let bottles = store.activeBottles.filter { $0.category == category }
+            let bottles = store.activeBottles
+                .filter { $0.category == category }
+                .sorted { lhs, rhs in
+                    nextReminderDate(for: lhs) < nextReminderDate(for: rhs)
+                }
             guard !bottles.isEmpty else { return nil }
             return BottleCategoryGroup(category: category, bottles: bottles)
         }
+    }
+
+    private func nextReminderDate(for bottle: Bottle) -> Date {
+        let fallback = Date.distantFuture
+        guard !bottle.enabledReminders.isEmpty else { return fallback }
+
+        let calendar = Calendar.current
+        return bottle.enabledReminders.compactMap { reminder in
+            reminder.days.compactMap { weekday -> Date? in
+                var components = DateComponents()
+                components.weekday = weekday.rawValue
+                components.hour = reminder.hour
+                components.minute = reminder.minute
+                return calendar.nextDate(
+                    after: currentDate,
+                    matching: components,
+                    matchingPolicy: .nextTime,
+                    direction: .forward
+                )
+            }
+            .min()
+        }
+        .min() ?? fallback
     }
 }
 
@@ -82,7 +109,7 @@ private struct BottleCategorySection: View {
             HStack(alignment: .firstTextBaseline) {
                 Text(section.category.title)
                     .font(.headline.weight(.semibold))
-                    .foregroundStyle(TLTheme.text)
+                    .foregroundStyle(section.category.accentColor)
 
                 Spacer()
 
@@ -120,17 +147,23 @@ struct BottleCard: View {
                     if let medicationName = bottle.medicationName {
                         Text(medicationName)
                             .font(.subheadline)
-                            .foregroundStyle(TLTheme.gray)
+                            .foregroundStyle(TLTheme.text)
                     }
                 }
 
                 Spacer()
 
-                StatusPill(text: statusText)
+                StatusPill(
+                    text: statusText,
+                    foregroundColor: statusForegroundColor,
+                    backgroundColor: statusBackgroundColor
+                )
             }
 
             HStack(spacing: 8) {
-                OrangeEventDot()
+                Circle()
+                    .fill(hasAnyOpening ? TLTheme.orange : TLTheme.categoryGray.opacity(0.5))
+                    .frame(width: 9, height: 9)
                     .accessibilityHidden(true)
                 Text(lastOpeningText)
                     .font(.subheadline)
@@ -169,14 +202,24 @@ struct BottleCard: View {
                 NavigationLink("Details") {
                     BottleDetailView(bottleId: bottle.id)
                 }
-                .buttonStyle(.bordered)
-                .tint(TLTheme.green)
+                .font(.headline)
+                .padding(.horizontal, 18)
+                .padding(.vertical, 8)
+                .foregroundStyle(TLTheme.text)
+                .background(TLTheme.green.opacity(0.14))
+                .clipShape(Capsule())
+                .buttonStyle(.plain)
                 .accessibilityLabel("View details for \(bottle.nickname)")
             }
         }
         .padding(16)
-        .background(TLTheme.cardBackground)
+        .background(cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay(alignment: .leading) {
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(bottle.category.accentColor)
+                .frame(width: 5)
+        }
         .confirmationDialog(
             "Recent opening found.",
             isPresented: $showRecentWarning,
@@ -207,18 +250,35 @@ struct BottleCard: View {
 
     private var statusText: String {
         guard let last = store.lastOpening(for: bottle) else {
-            return "No opening yet"
+            return "Not opened yet"
         }
 
         if Calendar.current.isDate(last.openedAt, inSameDayAs: currentDate) {
             return "Opened today"
         }
 
-        if Calendar.current.isDateInYesterday(last.openedAt) {
-            return "Opened yesterday"
-        }
+        return "Not opened today"
+    }
 
-        return "Recent opening"
+    private var hasAnyOpening: Bool {
+        store.lastOpening(for: bottle) != nil
+    }
+
+    private var hasOpenedToday: Bool {
+        guard let last = store.lastOpening(for: bottle) else { return false }
+        return Calendar.current.isDate(last.openedAt, inSameDayAs: currentDate)
+    }
+
+    private var cardBackground: Color {
+        hasOpenedToday ? TLTheme.cardBackground : TLTheme.cardBackground.opacity(0.78)
+    }
+
+    private var statusForegroundColor: Color {
+        hasOpenedToday ? TLTheme.green : TLTheme.categoryGray
+    }
+
+    private var statusBackgroundColor: Color {
+        hasOpenedToday ? TLTheme.green.opacity(0.12) : TLTheme.categoryGray.opacity(0.14)
     }
 
     private var reminderSummary: String {
@@ -313,14 +373,16 @@ struct EmptyStateView: View {
 
 struct StatusPill: View {
     var text: String
+    var foregroundColor: Color = TLTheme.green
+    var backgroundColor: Color = TLTheme.green.opacity(0.12)
 
     var body: some View {
         Text(text)
             .font(.caption.weight(.semibold))
             .padding(.horizontal, 10)
             .padding(.vertical, 6)
-            .foregroundStyle(TLTheme.green)
-            .background(TLTheme.green.opacity(0.12))
+            .foregroundStyle(foregroundColor)
+            .background(backgroundColor)
             .clipShape(Capsule())
     }
 }

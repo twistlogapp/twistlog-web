@@ -16,11 +16,15 @@ struct OpeningHistoryView: View {
                     )
                 } else {
                     List {
-                        ForEach(sortedEvents) { event in
-                            OpeningRow(
-                                event: event,
-                                bottleName: store.bottles.first(where: { $0.id == event.bottleId })?.nickname
-                            )
+                        ForEach(groupedEvents) { section in
+                            Section(section.title) {
+                                ForEach(section.events) { event in
+                                    OpeningRow(
+                                        event: event,
+                                        bottleName: store.bottles.first(where: { $0.id == event.bottleId })?.nickname
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -32,6 +36,45 @@ struct OpeningHistoryView: View {
     private var sortedEvents: [OpeningEvent] {
         store.openingEvents.sorted { $0.openedAt > $1.openedAt }
     }
+
+    private var groupedEvents: [OpeningHistorySection] {
+        let calendar = Calendar.current
+        let grouped = Dictionary(grouping: sortedEvents) { event in
+            calendar.startOfDay(for: event.openedAt)
+        }
+
+        return grouped.keys
+            .sorted(by: >)
+            .map { date in
+                OpeningHistorySection(
+                    date: date,
+                    title: sectionTitle(for: date),
+                    events: grouped[date] ?? []
+                )
+            }
+    }
+
+    private func sectionTitle(for date: Date) -> String {
+        let calendar = Calendar.current
+
+        if calendar.isDateInToday(date) {
+            return "Today"
+        }
+
+        if calendar.isDateInYesterday(date) {
+            return "Yesterday"
+        }
+
+        return date.formatted(date: .abbreviated, time: .omitted)
+    }
+}
+
+private struct OpeningHistorySection: Identifiable {
+    var date: Date
+    var title: String
+    var events: [OpeningEvent]
+
+    var id: Date { date }
 }
 
 struct OpeningRow: View {

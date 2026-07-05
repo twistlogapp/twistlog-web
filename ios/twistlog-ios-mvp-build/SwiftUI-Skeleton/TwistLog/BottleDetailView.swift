@@ -22,7 +22,7 @@ struct BottleDetailView: View {
                                 .font(.title2.weight(.bold))
                             if let medicationName = bottle.medicationName {
                                 Text(medicationName)
-                                    .foregroundStyle(TLTheme.gray)
+                                    .foregroundStyle(TLTheme.text)
                             }
                         }
                         .padding(.vertical, 6)
@@ -177,6 +177,12 @@ struct BottleDetailView: View {
         store.recordOpening(for: bottle)
         showSuccess = true
         UINotificationFeedbackGenerator().notificationOccurred(.success)
+        Task {
+            try? await Task.sleep(nanoseconds: 2_000_000_000)
+            await MainActor.run {
+                showSuccess = false
+            }
+        }
     }
 
     private func recentWarningMessage(for bottle: Bottle) -> String {

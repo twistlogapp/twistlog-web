@@ -64,7 +64,7 @@ struct AddBottleView: View {
                         }
                         .disabled(reminders.count >= 6)
 
-                        Text("Notification copy: Reminder: check your bottle.")
+                        Text("Notification copy: Time to check your bottle.")
                             .font(.caption)
                             .foregroundStyle(TLTheme.gray)
                     }
