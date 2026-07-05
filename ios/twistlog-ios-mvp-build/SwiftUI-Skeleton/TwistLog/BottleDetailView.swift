@@ -50,6 +50,10 @@ struct BottleDetailView: View {
                         }
                     }
 
+                    Section("Bottle") {
+                        LabeledContent("Type", value: bottle.category.title)
+                    }
+
                     Section("Last opening") {
                         if let last = store.lastOpening(for: bottle) {
                             OpeningRow(event: last, bottleName: nil)
@@ -191,6 +195,16 @@ struct BottleDetailView: View {
     private func intervalLabel(minutes: Int) -> String {
         if minutes < 60 {
             return "\(minutes) minutes"
+        }
+
+        if minutes % 10080 == 0 {
+            let weeks = minutes / 10080
+            return weeks == 1 ? "1 week" : "\(weeks) weeks"
+        }
+
+        if minutes % 1440 == 0 {
+            let days = minutes / 1440
+            return days == 1 ? "1 day" : "\(days) days"
         }
 
         let hours = minutes / 60

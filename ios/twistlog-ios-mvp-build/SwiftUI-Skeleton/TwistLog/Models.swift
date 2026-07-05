@@ -3,6 +3,7 @@ import Foundation
 struct Bottle: Identifiable, Hashable, Codable {
     var id = UUID()
     var nickname: String
+    var category: BottleCategory = .prescription
     var medicationName: String? = nil
     var notes: String? = nil
     var createdAt = Date()
@@ -19,6 +20,7 @@ struct Bottle: Identifiable, Hashable, Codable {
     init(
         id: UUID = UUID(),
         nickname: String,
+        category: BottleCategory = .prescription,
         medicationName: String? = nil,
         notes: String? = nil,
         createdAt: Date = Date(),
@@ -34,6 +36,7 @@ struct Bottle: Identifiable, Hashable, Codable {
     ) {
         self.id = id
         self.nickname = nickname
+        self.category = category
         self.medicationName = medicationName
         self.notes = notes
         self.createdAt = createdAt
@@ -60,6 +63,7 @@ struct Bottle: Identifiable, Hashable, Codable {
     enum CodingKeys: String, CodingKey {
         case id
         case nickname
+        case category
         case medicationName
         case notes
         case createdAt
@@ -79,6 +83,7 @@ struct Bottle: Identifiable, Hashable, Codable {
 
         id = try container.decodeIfPresent(UUID.self, forKey: .id) ?? UUID()
         nickname = try container.decode(String.self, forKey: .nickname)
+        category = try container.decodeIfPresent(BottleCategory.self, forKey: .category) ?? .prescription
         medicationName = try container.decodeIfPresent(String.self, forKey: .medicationName)
         notes = try container.decodeIfPresent(String.self, forKey: .notes)
         createdAt = try container.decodeIfPresent(Date.self, forKey: .createdAt) ?? Date()
@@ -103,6 +108,7 @@ struct Bottle: Identifiable, Hashable, Codable {
 
         try container.encode(id, forKey: .id)
         try container.encode(nickname, forKey: .nickname)
+        try container.encode(category, forKey: .category)
         try container.encodeIfPresent(medicationName, forKey: .medicationName)
         try container.encodeIfPresent(notes, forKey: .notes)
         try container.encode(createdAt, forKey: .createdAt)
@@ -132,6 +138,30 @@ struct Bottle: Identifiable, Hashable, Codable {
                 days: days
             )
         ]
+    }
+}
+
+enum BottleCategory: String, CaseIterable, Codable, Identifiable {
+    case prescription
+    case supplement
+    case other
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .prescription: return "Prescription"
+        case .supplement: return "Supplements"
+        case .other: return "Other"
+        }
+    }
+
+    var pickerTitle: String {
+        switch self {
+        case .prescription: return "Rx"
+        case .supplement: return "Supp"
+        case .other: return "Other"
+        }
     }
 }
 

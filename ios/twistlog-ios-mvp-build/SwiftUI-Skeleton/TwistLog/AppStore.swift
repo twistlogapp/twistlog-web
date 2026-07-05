@@ -89,6 +89,7 @@ final class AppStore: ObservableObject {
 
     func addBottle(
         nickname: String,
+        category: BottleCategory = .prescription,
         medicationName: String?,
         notes: String?,
         minimumIntervalEnabled: Bool,
@@ -100,6 +101,7 @@ final class AppStore: ObservableObject {
     ) {
         addBottle(
             nickname: nickname,
+            category: category,
             medicationName: medicationName,
             notes: notes,
             minimumIntervalEnabled: minimumIntervalEnabled,
@@ -115,6 +117,7 @@ final class AppStore: ObservableObject {
 
     func addBottle(
         nickname: String,
+        category: BottleCategory = .prescription,
         medicationName: String?,
         notes: String?,
         minimumIntervalEnabled: Bool,
@@ -123,6 +126,7 @@ final class AppStore: ObservableObject {
     ) {
         let bottle = Bottle(
             nickname: nickname,
+            category: category,
             medicationName: medicationName?.nilIfBlank,
             notes: notes?.nilIfBlank,
             minimumIntervalEnabled: minimumIntervalEnabled,
@@ -141,6 +145,7 @@ final class AppStore: ObservableObject {
     func updateBottle(
         id: UUID,
         nickname: String,
+        category: BottleCategory = .prescription,
         medicationName: String?,
         notes: String?,
         minimumIntervalEnabled: Bool,
@@ -153,6 +158,7 @@ final class AppStore: ObservableObject {
         updateBottle(
             id: id,
             nickname: nickname,
+            category: category,
             medicationName: medicationName,
             notes: notes,
             minimumIntervalEnabled: minimumIntervalEnabled,
@@ -169,6 +175,7 @@ final class AppStore: ObservableObject {
     func updateBottle(
         id: UUID,
         nickname: String,
+        category: BottleCategory = .prescription,
         medicationName: String?,
         notes: String?,
         minimumIntervalEnabled: Bool,
@@ -178,6 +185,7 @@ final class AppStore: ObservableObject {
         guard let index = bottles.firstIndex(where: { $0.id == id }) else { return }
 
         bottles[index].nickname = nickname
+        bottles[index].category = category
         bottles[index].medicationName = medicationName?.nilIfBlank
         bottles[index].notes = notes?.nilIfBlank
         bottles[index].minimumIntervalEnabled = minimumIntervalEnabled
@@ -238,7 +246,7 @@ final class AppStore: ObservableObject {
 
     private func scheduleReminderIfNeeded(for bottle: Bottle) {
         Task {
-            if !bottle.enabledReminders.isEmpty {
+            if !bottle.isArchived, !bottle.enabledReminders.isEmpty {
                 await reminderScheduler.rescheduleReminder(for: bottle)
             } else {
                 reminderScheduler.cancelReminder(for: bottle.id)
@@ -249,6 +257,7 @@ final class AppStore: ObservableObject {
     static let preview: AppStore = {
         let morning = Bottle(
             nickname: "Morning bottle",
+            category: .prescription,
             medicationName: "Vitamin D",
             minimumIntervalEnabled: true,
             minimumIntervalMinutes: 240,
@@ -259,6 +268,7 @@ final class AppStore: ObservableObject {
         )
         let evening = Bottle(
             nickname: "Evening bottle",
+            category: .supplement,
             medicationName: nil
         )
         return AppStore(

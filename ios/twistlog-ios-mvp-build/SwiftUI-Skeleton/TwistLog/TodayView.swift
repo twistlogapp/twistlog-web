@@ -1,6 +1,6 @@
-import Combine
 import SwiftUI
 import UIKit
+import Combine
 
 struct TodayView: View {
     @EnvironmentObject private var store: AppStore
@@ -23,9 +23,12 @@ struct TodayView: View {
                     }
                 } else {
                     ScrollView {
-                        LazyVStack(spacing: 14) {
-                            ForEach(store.activeBottles) { bottle in
-                                BottleCard(bottle: bottle, currentDate: currentDate)
+                        LazyVStack(alignment: .leading, spacing: 18) {
+                            ForEach(groupedSections) { section in
+                                BottleCategorySection(
+                                    section: section,
+                                    currentDate: currentDate
+                                )
                             }
                         }
                         .padding()
@@ -50,6 +53,49 @@ struct TodayView: View {
             }
             .sheet(isPresented: $showingAddBottle) {
                 AddBottleView()
+            }
+        }
+    }
+
+    private var groupedSections: [BottleCategoryGroup] {
+        BottleCategory.allCases.compactMap { category in
+            let bottles = store.activeBottles.filter { $0.category == category }
+            guard !bottles.isEmpty else { return nil }
+            return BottleCategoryGroup(category: category, bottles: bottles)
+        }
+    }
+}
+
+private struct BottleCategoryGroup: Identifiable {
+    var category: BottleCategory
+    var bottles: [Bottle]
+
+    var id: BottleCategory { category }
+}
+
+private struct BottleCategorySection: View {
+    var section: BottleCategoryGroup
+    var currentDate: Date
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .firstTextBaseline) {
+                Text(section.category.title)
+                    .font(.headline.weight(.semibold))
+                    .foregroundStyle(TLTheme.text)
+
+                Spacer()
+
+                Text("\(section.bottles.count) \(section.bottles.count == 1 ? "bottle" : "bottles")")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(TLTheme.gray)
+            }
+            .padding(.horizontal, 4)
+
+            LazyVStack(spacing: 14) {
+                ForEach(section.bottles) { bottle in
+                    BottleCard(bottle: bottle, currentDate: currentDate)
+                }
             }
         }
     }

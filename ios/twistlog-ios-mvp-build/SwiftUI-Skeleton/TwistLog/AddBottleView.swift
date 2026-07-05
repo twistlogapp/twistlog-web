@@ -7,6 +7,7 @@ struct AddBottleView: View {
     private let bottle: Bottle?
 
     @State private var nickname: String
+    @State private var category: BottleCategory
     @State private var medicationName: String
     @State private var notes: String
     @State private var minimumIntervalEnabled: Bool
@@ -19,6 +20,7 @@ struct AddBottleView: View {
     init(bottle: Bottle? = nil) {
         self.bottle = bottle
         _nickname = State(initialValue: bottle?.nickname ?? "")
+        _category = State(initialValue: bottle?.category ?? .prescription)
         _medicationName = State(initialValue: bottle?.medicationName ?? "")
         _notes = State(initialValue: bottle?.notes ?? "")
         _minimumIntervalEnabled = State(initialValue: bottle?.minimumIntervalEnabled ?? false)
@@ -34,6 +36,12 @@ struct AddBottleView: View {
             Form {
                 Section("Bottle") {
                     TextField("Bottle nickname", text: $nickname)
+                    Picker("Type", selection: $category) {
+                        ForEach(BottleCategory.allCases) { category in
+                            Text(category.pickerTitle).tag(category)
+                        }
+                    }
+                    .pickerStyle(.segmented)
                     TextField("Medication name (optional)", text: $medicationName)
                     TextField("Notes", text: $notes, axis: .vertical)
                         .lineLimit(3, reservesSpace: true)
@@ -170,6 +178,7 @@ struct AddBottleView: View {
             store.updateBottle(
                 id: bottle.id,
                 nickname: trimmedNickname,
+                category: category,
                 medicationName: medicationName,
                 notes: notes,
                 minimumIntervalEnabled: minimumIntervalEnabled,
@@ -179,6 +188,7 @@ struct AddBottleView: View {
         } else {
             store.addBottle(
                 nickname: trimmedNickname,
+                category: category,
                 medicationName: medicationName,
                 notes: notes,
                 minimumIntervalEnabled: minimumIntervalEnabled,
