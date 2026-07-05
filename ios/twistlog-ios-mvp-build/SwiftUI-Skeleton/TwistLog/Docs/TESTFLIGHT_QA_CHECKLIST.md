@@ -27,7 +27,9 @@ Run this checklist before sharing each TestFlight build.
 - Confirm `Opening recorded.` fades away after about 2 seconds on Today and Details.
 - Trigger a recent-opening alert and confirm `Record anyway` and `Cancel` both appear.
 - Confirm History shows the new opening.
+- Confirm History shows the subtitle `Review when your bottles were opened.`
 - Confirm History is grouped by `Today`, `Yesterday`, and older date headers.
+- Confirm History rows appear as rounded cards with bottle name, `Bottle opened`, source pill, time, and date.
 - Delete an opening from History or Details and confirm it disappears.
 - Archive a bottle and confirm it disappears from Today while existing history remains.
 - Confirm the archive alert shows both `Archive Bottle` and `Cancel`.

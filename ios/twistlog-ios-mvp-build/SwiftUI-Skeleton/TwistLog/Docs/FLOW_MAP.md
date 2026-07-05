@@ -250,14 +250,30 @@ Primary job: answer what happened recently.
 
 Default:
 
+- Header: `Opening History`.
+- Subtitle: `Review when your bottles were opened.`
 - Reverse chronological.
-- Grouped by day.
+- Grouped by day: Today, Yesterday, then older dates.
+- Rounded activity cards, not plain table rows.
 - Orange dot for each recorded opening.
+- Time/date aligned on the right for fast scanning.
+- Source displayed as a subtle pill, for example `Manual`.
+- No hero illustration, filter, stats strip, or streak counter in v1.
 
 Empty state:
 
 ```text
-Opening history will appear here.
+No openings recorded yet
+Tap Opened now from a bottle to start your opening history.
+```
+
+Card:
+
+```text
+Orange dot
+Ashwagandha                  7:26 AM
+Bottle opened                Jul 5, 2026
+Manual
 ```
 
 Rows:
