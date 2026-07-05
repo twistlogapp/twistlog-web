@@ -4,6 +4,9 @@ import UIKit
 struct TodayView: View {
     @EnvironmentObject private var store: AppStore
     @State private var showingAddBottle = false
+    @State private var currentDate = Date()
+
+    private let clock = Timer.publish(every: 60, on: .main, in: .common).autoconnect()
 
     var body: some View {
         NavigationStack {
@@ -21,15 +24,21 @@ struct TodayView: View {
                     ScrollView {
                         LazyVStack(spacing: 14) {
                             ForEach(store.activeBottles) { bottle in
-                                BottleCard(bottle: bottle)
+                                BottleCard(bottle: bottle, currentDate: currentDate)
                             }
                         }
                         .padding()
                     }
-                    .background(TLTheme.lightGray.opacity(0.55))
+                    .background(TLTheme.lightGray)
                 }
             }
             .navigationTitle("Today")
+            .onAppear {
+                currentDate = Date()
+            }
+            .onReceive(clock) { now in
+                currentDate = now
+            }
             .toolbar {
                 Button {
                     showingAddBottle = true
@@ -48,6 +57,7 @@ struct TodayView: View {
 struct BottleCard: View {
     @EnvironmentObject private var store: AppStore
     var bottle: Bottle
+    var currentDate: Date
 
     @State private var showRecentWarning = false
     @State private var showSuccess = false
@@ -118,7 +128,7 @@ struct BottleCard: View {
             }
         }
         .padding(16)
-        .background(.background)
+        .background(TLTheme.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .confirmationDialog(
             "Recent opening found.",
@@ -153,8 +163,12 @@ struct BottleCard: View {
             return "No opening yet"
         }
 
-        if Calendar.current.isDateInToday(last.openedAt) {
+        if Calendar.current.isDate(last.openedAt, inSameDayAs: currentDate) {
             return "Opened today"
+        }
+
+        if Calendar.current.isDateInYesterday(last.openedAt) {
+            return "Opened yesterday"
         }
 
         return "Recent opening"
@@ -197,6 +211,12 @@ struct BottleCard: View {
         store.recordOpening(for: bottle)
         showSuccess = true
         UINotificationFeedbackGenerator().notificationOccurred(.success)
+        Task {
+            try? await Task.sleep(nanoseconds: 2_000_000_000)
+            await MainActor.run {
+                showSuccess = false
+            }
+        }
     }
 }
 
@@ -240,7 +260,7 @@ struct EmptyStateView: View {
         }
         .padding(28)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(TLTheme.lightGray.opacity(0.45))
+        .background(TLTheme.lightGray)
     }
 }
 

@@ -11,6 +11,8 @@ struct AddBottleView: View {
     @State private var notes: String
     @State private var minimumIntervalEnabled: Bool
     @State private var minimumIntervalMinutes: Int
+    @State private var minimumIntervalUnit: IntervalUnit
+    @State private var minimumIntervalValue: Int
     @State private var reminderEnabled: Bool
     @State private var reminders: [BottleReminder]
 
@@ -21,6 +23,8 @@ struct AddBottleView: View {
         _notes = State(initialValue: bottle?.notes ?? "")
         _minimumIntervalEnabled = State(initialValue: bottle?.minimumIntervalEnabled ?? false)
         _minimumIntervalMinutes = State(initialValue: bottle?.minimumIntervalMinutes ?? 240)
+        _minimumIntervalUnit = State(initialValue: Self.intervalUnit(for: bottle?.minimumIntervalMinutes ?? 240))
+        _minimumIntervalValue = State(initialValue: Self.intervalValue(for: bottle?.minimumIntervalMinutes ?? 240))
         _reminderEnabled = State(initialValue: !(bottle?.reminders ?? []).isEmpty)
         _reminders = State(initialValue: bottle?.reminders ?? [Self.defaultReminder()])
     }
@@ -66,12 +70,47 @@ struct AddBottleView: View {
                     Toggle("Minimum time between openings", isOn: $minimumIntervalEnabled)
 
                     if minimumIntervalEnabled {
-                        Stepper(value: $minimumIntervalMinutes, in: 15...1440, step: 15) {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("Warn if opened again within")
+                        VStack(alignment: .leading, spacing: 14) {
+                            Text("Quick presets")
+                                .font(.subheadline)
+                                .foregroundStyle(TLTheme.gray)
+
+                            LazyVGrid(columns: [
+                                GridItem(.adaptive(minimum: 64), spacing: 8)
+                            ], spacing: 8) {
+                                ForEach(IntervalPreset.allCases) { preset in
+                                    Button {
+                                        setInterval(minutes: preset.minutes)
+                                    } label: {
+                                        Text(preset.title)
+                                            .font(.caption.weight(.semibold))
+                                            .lineLimit(1)
+                                            .frame(maxWidth: .infinity)
+                                            .padding(.vertical, 9)
+                                            .foregroundStyle(minimumIntervalMinutes == preset.minutes ? TLTheme.selectedChipText : TLTheme.green)
+                                            .background(minimumIntervalMinutes == preset.minutes ? TLTheme.green : TLTheme.green.opacity(0.14))
+                                            .clipShape(Capsule())
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                            }
+
+                            Picker("Period frequency", selection: $minimumIntervalUnit) {
+                                ForEach(IntervalUnit.allCases) { unit in
+                                    Text(unit.title).tag(unit)
+                                }
+                            }
+                            .pickerStyle(.segmented)
+                            .onChange(of: minimumIntervalUnit) { _ in
+                                minimumIntervalValue = min(max(minimumIntervalValue, 1), minimumIntervalUnit.maximumValue)
+                                syncMinimumIntervalMinutes()
+                            }
+
+                            Stepper(value: $minimumIntervalValue, in: 1...minimumIntervalUnit.maximumValue, step: 1) {
                                 Text(intervalLabel)
-                                    .font(.caption)
-                                    .foregroundStyle(TLTheme.gray)
+                            }
+                            .onChange(of: minimumIntervalValue) { _ in
+                                syncMinimumIntervalMinutes()
                             }
                         }
                     }
@@ -145,7 +184,7 @@ struct AddBottleView: View {
                 medicationName: medicationName,
                 notes: notes,
                 minimumIntervalEnabled: minimumIntervalEnabled,
-                minimumIntervalMinutes: minimumIntervalMinutes,
+                minimumIntervalMinutes: normalizedMinimumIntervalMinutes,
                 reminders: normalizedReminders
             )
         } else {
@@ -154,7 +193,7 @@ struct AddBottleView: View {
                 medicationName: medicationName,
                 notes: notes,
                 minimumIntervalEnabled: minimumIntervalEnabled,
-                minimumIntervalMinutes: minimumIntervalMinutes,
+                minimumIntervalMinutes: normalizedMinimumIntervalMinutes,
                 reminders: normalizedReminders
             )
         }
@@ -174,6 +213,122 @@ struct AddBottleView: View {
             minute: 0,
             days: Set(Weekday.allCases)
         )
+    }
+
+    private var normalizedMinimumIntervalMinutes: Int? {
+        minimumIntervalEnabled ? minimumIntervalMinutes : nil
+    }
+
+    private func setInterval(minutes: Int) {
+        minimumIntervalMinutes = minutes
+        minimumIntervalUnit = Self.intervalUnit(for: minutes)
+        minimumIntervalValue = Self.intervalValue(for: minutes)
+    }
+
+    private func syncMinimumIntervalMinutes() {
+        minimumIntervalMinutes = minimumIntervalValue * minimumIntervalUnit.minuteMultiplier
+    }
+
+    private static func intervalUnit(for minutes: Int) -> IntervalUnit {
+        if minutes % IntervalUnit.weeks.minuteMultiplier == 0 {
+            return .weeks
+        }
+
+        if minutes % IntervalUnit.days.minuteMultiplier == 0 {
+            return .days
+        }
+
+        if minutes % IntervalUnit.hours.minuteMultiplier == 0 {
+            return .hours
+        }
+
+        return .minutes
+    }
+
+    private static func intervalValue(for minutes: Int) -> Int {
+        let unit = intervalUnit(for: minutes)
+        return max(1, minutes / unit.minuteMultiplier)
+    }
+}
+
+private enum IntervalUnit: String, CaseIterable, Identifiable {
+    case minutes
+    case hours
+    case days
+    case weeks
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .minutes: return "Min"
+        case .hours: return "Hours"
+        case .days: return "Days"
+        case .weeks: return "Weeks"
+        }
+    }
+
+    var singularTitle: String {
+        switch self {
+        case .minutes: return "minute"
+        case .hours: return "hour"
+        case .days: return "day"
+        case .weeks: return "week"
+        }
+    }
+
+    var minuteMultiplier: Int {
+        switch self {
+        case .minutes: return 1
+        case .hours: return 60
+        case .days: return 1440
+        case .weeks: return 10080
+        }
+    }
+
+    var maximumValue: Int {
+        switch self {
+        case .minutes: return 180
+        case .hours: return 72
+        case .days: return 30
+        case .weeks: return 12
+        }
+    }
+}
+
+private enum IntervalPreset: CaseIterable, Identifiable {
+    case fourHours
+    case eightHours
+    case twelveHours
+    case sixteenHours
+    case twentyTwoHours
+    case oneDay
+    case oneWeek
+
+    var id: String { title }
+
+    var title: String {
+        switch self {
+        case .fourHours: return "4h"
+        case .eightHours: return "8h"
+        case .twelveHours: return "12h"
+        case .sixteenHours: return "16h"
+        case .twentyTwoHours: return "22h"
+        case .oneDay: return "1d"
+        case .oneWeek: return "1w"
+        }
+    }
+
+    var minutes: Int {
+        switch self {
+        case .fourHours: return 240
+        case .eightHours: return 480
+        case .twelveHours: return 720
+        case .sixteenHours: return 960
+        case .twentyTwoHours: return 1320
+        case .oneDay: return 1440
+        case .oneWeek: return 10080
+        }
     }
 }
 
@@ -214,15 +369,20 @@ private struct ReminderEditorView: View {
                         Button {
                             toggleWeekday(weekday)
                         } label: {
-                            Text(weekday.shortName)
+                            Text(weekday.twoLetterName)
                                 .font(.caption.weight(.semibold))
-                                .frame(maxWidth: .infinity)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.8)
+                                .frame(width: 38, height: 38)
+                                .foregroundStyle(reminder.days.contains(weekday) ? TLTheme.selectedChipText : TLTheme.green)
+                                .background(reminder.days.contains(weekday) ? TLTheme.green : TLTheme.green.opacity(0.14))
+                                .clipShape(Capsule())
                         }
-                        .buttonStyle(.bordered)
-                        .tint(reminder.days.contains(weekday) ? TLTheme.green : TLTheme.gray)
+                        .buttonStyle(.plain)
                         .accessibilityLabel("\(weekday.shortName) reminder")
                     }
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
         .padding(.vertical, 4)

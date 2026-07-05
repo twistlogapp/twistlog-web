@@ -208,4 +208,16 @@ enum Weekday: Int, CaseIterable, Codable {
         case .saturday: return "Sat"
         }
     }
+
+    var twoLetterName: String {
+        switch self {
+        case .sunday: return "Su"
+        case .monday: return "Mo"
+        case .tuesday: return "Tu"
+        case .wednesday: return "We"
+        case .thursday: return "Th"
+        case .friday: return "Fr"
+        case .saturday: return "Sa"
+        }
+    }
 }
