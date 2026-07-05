@@ -12,8 +12,7 @@ struct AddBottleView: View {
     @State private var minimumIntervalEnabled: Bool
     @State private var minimumIntervalMinutes: Int
     @State private var reminderEnabled: Bool
-    @State private var reminderTime: Date
-    @State private var reminderDays: Set<Weekday>
+    @State private var reminders: [BottleReminder]
 
     init(bottle: Bottle? = nil) {
         self.bottle = bottle
@@ -22,9 +21,8 @@ struct AddBottleView: View {
         _notes = State(initialValue: bottle?.notes ?? "")
         _minimumIntervalEnabled = State(initialValue: bottle?.minimumIntervalEnabled ?? false)
         _minimumIntervalMinutes = State(initialValue: bottle?.minimumIntervalMinutes ?? 240)
-        _reminderEnabled = State(initialValue: bottle?.reminderEnabled ?? false)
-        _reminderTime = State(initialValue: Self.reminderDate(hour: bottle?.reminderHour ?? 8, minute: bottle?.reminderMinute ?? 0))
-        _reminderDays = State(initialValue: bottle?.reminderDays ?? Set(Weekday.allCases))
+        _reminderEnabled = State(initialValue: !(bottle?.reminders ?? []).isEmpty)
+        _reminders = State(initialValue: bottle?.reminders ?? [Self.defaultReminder()])
     }
 
     var body: some View {
@@ -41,28 +39,18 @@ struct AddBottleView: View {
                     Toggle("Reminder", isOn: $reminderEnabled)
 
                     if reminderEnabled {
-                        DatePicker("Reminder time", selection: $reminderTime, displayedComponents: .hourAndMinute)
-
-                        VStack(alignment: .leading, spacing: 10) {
-                            Text("Reminder days")
-                                .font(.subheadline)
-                                .foregroundStyle(TLTheme.gray)
-
-                            HStack(spacing: 6) {
-                                ForEach(Weekday.allCases, id: \.self) { weekday in
-                                    Button {
-                                        toggleWeekday(weekday)
-                                    } label: {
-                                        Text(weekday.shortName)
-                                            .font(.caption.weight(.semibold))
-                                            .frame(maxWidth: .infinity)
-                                    }
-                                    .buttonStyle(.bordered)
-                                    .tint(reminderDays.contains(weekday) ? TLTheme.green : TLTheme.gray)
-                                }
+                        ForEach($reminders) { $reminder in
+                            ReminderEditorView(reminder: $reminder) {
+                                removeReminder(reminder.id)
                             }
                         }
-                        .padding(.vertical, 4)
+
+                        Button {
+                            reminders.append(Self.defaultReminder(hour: nextReminderHour))
+                        } label: {
+                            Label("Add reminder time", systemImage: "plus.circle")
+                        }
+                        .disabled(reminders.count >= 6)
 
                         Text("Notification copy: Reminder: check your bottle.")
                             .font(.caption)
@@ -130,11 +118,26 @@ struct AddBottleView: View {
         return "\(hours) hr \(minutes) min"
     }
 
-    private func save() {
-        let components = Calendar.current.dateComponents([.hour, .minute], from: reminderTime)
-        let hour = components.hour ?? 8
-        let minute = components.minute ?? 0
+    private var normalizedReminders: [BottleReminder] {
+        guard reminderEnabled else { return [] }
+        return reminders
+            .map { reminder in
+                var normalized = reminder
+                normalized.isEnabled = true
+                return normalized
+            }
+            .filter { !$0.days.isEmpty }
+    }
 
+    private var reminderDays: Set<Weekday> {
+        Set(normalizedReminders.flatMap(\.days))
+    }
+
+    private var nextReminderHour: Int {
+        min((reminders.last?.hour ?? 8) + 12, 23)
+    }
+
+    private func save() {
         if let bottle {
             store.updateBottle(
                 id: bottle.id,
@@ -143,10 +146,7 @@ struct AddBottleView: View {
                 notes: notes,
                 minimumIntervalEnabled: minimumIntervalEnabled,
                 minimumIntervalMinutes: minimumIntervalMinutes,
-                reminderEnabled: reminderEnabled,
-                reminderHour: hour,
-                reminderMinute: minute,
-                reminderDays: reminderDays
+                reminders: normalizedReminders
             )
         } else {
             store.addBottle(
@@ -155,19 +155,84 @@ struct AddBottleView: View {
                 notes: notes,
                 minimumIntervalEnabled: minimumIntervalEnabled,
                 minimumIntervalMinutes: minimumIntervalMinutes,
-                reminderEnabled: reminderEnabled,
-                reminderHour: hour,
-                reminderMinute: minute,
-                reminderDays: reminderDays
+                reminders: normalizedReminders
             )
         }
     }
 
+    private func removeReminder(_ id: UUID) {
+        reminders.removeAll { $0.id == id }
+        if reminders.isEmpty {
+            reminders.append(Self.defaultReminder())
+        }
+    }
+
+    private static func defaultReminder(hour: Int = 8) -> BottleReminder {
+        BottleReminder(
+            isEnabled: true,
+            hour: hour,
+            minute: 0,
+            days: Set(Weekday.allCases)
+        )
+    }
+}
+
+private struct ReminderEditorView: View {
+    @Binding var reminder: BottleReminder
+    var onDelete: () -> Void
+
+    private var reminderTime: Binding<Date> {
+        Binding {
+            Self.reminderDate(hour: reminder.hour, minute: reminder.minute)
+        } set: { newValue in
+            let components = Calendar.current.dateComponents([.hour, .minute], from: newValue)
+            reminder.hour = components.hour ?? 8
+            reminder.minute = components.minute ?? 0
+        }
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                DatePicker("Reminder time", selection: reminderTime, displayedComponents: .hourAndMinute)
+
+                Button(role: .destructive) {
+                    onDelete()
+                } label: {
+                    Image(systemName: "minus.circle.fill")
+                }
+                .accessibilityLabel("Remove reminder time")
+            }
+
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Reminder days")
+                    .font(.subheadline)
+                    .foregroundStyle(TLTheme.gray)
+
+                HStack(spacing: 6) {
+                    ForEach(Weekday.allCases, id: \.self) { weekday in
+                        Button {
+                            toggleWeekday(weekday)
+                        } label: {
+                            Text(weekday.shortName)
+                                .font(.caption.weight(.semibold))
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.bordered)
+                        .tint(reminder.days.contains(weekday) ? TLTheme.green : TLTheme.gray)
+                        .accessibilityLabel("\(weekday.shortName) reminder")
+                    }
+                }
+            }
+        }
+        .padding(.vertical, 4)
+    }
+
     private func toggleWeekday(_ weekday: Weekday) {
-        if reminderDays.contains(weekday) {
-            reminderDays.remove(weekday)
+        if reminder.days.contains(weekday) {
+            reminder.days.remove(weekday)
         } else {
-            reminderDays.insert(weekday)
+            reminder.days.insert(weekday)
         }
     }
 

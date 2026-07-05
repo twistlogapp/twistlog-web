@@ -13,6 +13,7 @@ struct Bottle: Identifiable, Hashable, Codable {
     var reminderHour = 8
     var reminderMinute = 0
     var reminderDays: Set<Weekday> = Set(Weekday.allCases)
+    var reminders: [BottleReminder] = []
     var isArchived = false
 
     init(
@@ -28,6 +29,7 @@ struct Bottle: Identifiable, Hashable, Codable {
         reminderHour: Int = 8,
         reminderMinute: Int = 0,
         reminderDays: Set<Weekday> = Set(Weekday.allCases),
+        reminders: [BottleReminder]? = nil,
         isArchived: Bool = false
     ) {
         self.id = id
@@ -42,7 +44,17 @@ struct Bottle: Identifiable, Hashable, Codable {
         self.reminderHour = reminderHour
         self.reminderMinute = reminderMinute
         self.reminderDays = reminderDays
+        self.reminders = reminders ?? Self.migratedReminders(
+            enabled: reminderEnabled,
+            hour: reminderHour,
+            minute: reminderMinute,
+            days: reminderDays
+        )
         self.isArchived = isArchived
+    }
+
+    var enabledReminders: [BottleReminder] {
+        reminders.filter { $0.isEnabled && !$0.days.isEmpty }
     }
 
     enum CodingKeys: String, CodingKey {
@@ -58,6 +70,7 @@ struct Bottle: Identifiable, Hashable, Codable {
         case reminderHour
         case reminderMinute
         case reminderDays
+        case reminders
         case isArchived
     }
 
@@ -76,6 +89,12 @@ struct Bottle: Identifiable, Hashable, Codable {
         reminderHour = try container.decodeIfPresent(Int.self, forKey: .reminderHour) ?? 8
         reminderMinute = try container.decodeIfPresent(Int.self, forKey: .reminderMinute) ?? 0
         reminderDays = try container.decodeIfPresent(Set<Weekday>.self, forKey: .reminderDays) ?? Set(Weekday.allCases)
+        reminders = try container.decodeIfPresent([BottleReminder].self, forKey: .reminders) ?? Self.migratedReminders(
+            enabled: reminderEnabled,
+            hour: reminderHour,
+            minute: reminderMinute,
+            days: reminderDays
+        )
         isArchived = try container.decodeIfPresent(Bool.self, forKey: .isArchived) ?? false
     }
 
@@ -94,7 +113,38 @@ struct Bottle: Identifiable, Hashable, Codable {
         try container.encode(reminderHour, forKey: .reminderHour)
         try container.encode(reminderMinute, forKey: .reminderMinute)
         try container.encode(reminderDays, forKey: .reminderDays)
+        try container.encode(reminders, forKey: .reminders)
         try container.encode(isArchived, forKey: .isArchived)
+    }
+
+    private static func migratedReminders(
+        enabled: Bool,
+        hour: Int,
+        minute: Int,
+        days: Set<Weekday>
+    ) -> [BottleReminder] {
+        guard enabled else { return [] }
+        return [
+            BottleReminder(
+                isEnabled: true,
+                hour: hour,
+                minute: minute,
+                days: days
+            )
+        ]
+    }
+}
+
+struct BottleReminder: Identifiable, Hashable, Codable {
+    var id = UUID()
+    var isEnabled = true
+    var hour = 8
+    var minute = 0
+    var days: Set<Weekday> = Set(Weekday.allCases)
+
+    var displayTime: String {
+        let date = Calendar.current.date(from: DateComponents(hour: hour, minute: minute)) ?? Date()
+        return date.formatted(date: .omitted, time: .shortened)
     }
 }
 

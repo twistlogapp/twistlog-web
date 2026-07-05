@@ -82,7 +82,7 @@ struct BottleCard: View {
             .accessibilityElement(children: .combine)
             .accessibilityLabel(lastOpeningText)
 
-            if bottle.reminderEnabled {
+            if !bottle.enabledReminders.isEmpty {
                 Label(reminderSummary, systemImage: "bell")
                     .font(.caption)
                     .foregroundStyle(TLTheme.gray)
@@ -161,19 +161,36 @@ struct BottleCard: View {
     }
 
     private var reminderSummary: String {
-        let date = Calendar.current.date(from: DateComponents(hour: bottle.reminderHour, minute: bottle.reminderMinute)) ?? Date()
-        let time = date.formatted(date: .omitted, time: .shortened)
-
-        if bottle.reminderDays.count == Weekday.allCases.count {
-            return "Reminder: daily at \(time)"
+        let reminders = bottle.enabledReminders
+        guard !reminders.isEmpty else {
+            return "Reminder: off"
         }
 
-        let days = Weekday.allCases
-            .filter { bottle.reminderDays.contains($0) }
-            .map(\.shortName)
+        if reminders.count == 1, let reminder = reminders.first {
+            return "Reminder: \(reminderDaySummary(reminder)) at \(reminder.displayTime)"
+        }
+
+        let times = reminders
+            .prefix(2)
+            .map(\.displayTime)
             .joined(separator: ", ")
 
-        return "Reminder: \(days) at \(time)"
+        if reminders.count > 2 {
+            return "Reminders: \(times) + \(reminders.count - 2) more"
+        }
+
+        return "Reminders: \(times)"
+    }
+
+    private func reminderDaySummary(_ reminder: BottleReminder) -> String {
+        if reminder.days.count == Weekday.allCases.count {
+            return "daily"
+        }
+
+        return Weekday.allCases
+            .filter { reminder.days.contains($0) }
+            .map(\.shortName)
+            .joined(separator: ", ")
     }
 
     private func recordOpening() {

@@ -42,40 +42,48 @@ enum NotificationManager {
 
         cancelReminder(for: bottle.id)
 
-        guard bottle.reminderEnabled, !bottle.isArchived, !bottle.reminderDays.isEmpty else {
+        let reminders = bottle.enabledReminders
+
+        guard !reminders.isEmpty, !bottle.isArchived else {
             return
         }
 
         let granted = await requestAuthorization()
         guard granted else { return }
 
-        for weekday in bottle.reminderDays {
-            var components = DateComponents()
-            components.weekday = weekday.rawValue
-            components.hour = bottle.reminderHour
-            components.minute = bottle.reminderMinute
+        for (index, reminder) in reminders.enumerated() {
+            for weekday in reminder.days {
+                var components = DateComponents()
+                components.weekday = weekday.rawValue
+                components.hour = reminder.hour
+                components.minute = reminder.minute
 
-            let content = UNMutableNotificationContent()
-            content.title = "Reminder: check your bottle."
-            content.body = "\(bottle.nickname): Open TwistLog to view recent openings."
-            content.sound = .default
+                let content = UNMutableNotificationContent()
+                content.title = "Reminder: check your bottle."
+                content.body = "\(bottle.nickname): Open TwistLog to view recent openings."
+                content.sound = .default
 
-            let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
-            let request = UNNotificationRequest(
-                identifier: reminderIdentifier(for: bottle.id, weekday: weekday),
-                content: content,
-                trigger: trigger
-            )
+                let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
+                let request = UNNotificationRequest(
+                    identifier: reminderIdentifier(for: bottle.id, reminderIndex: index, weekday: weekday),
+                    content: content,
+                    trigger: trigger
+                )
 
-            try? await UNUserNotificationCenter.current().add(request)
+                try? await UNUserNotificationCenter.current().add(request)
+            }
         }
     }
 
     static func cancelReminder(for bottleId: UUID) {
         guard canUseUserNotifications else { return }
 
-        let identifiers = Weekday.allCases.map { reminderIdentifier(for: bottleId, weekday: $0) }
+        let legacyIdentifiers = Weekday.allCases.map { legacyReminderIdentifier(for: bottleId, weekday: $0) }
+        let identifiers = (0..<12).flatMap { index in
+            Weekday.allCases.map { reminderIdentifier(for: bottleId, reminderIndex: index, weekday: $0) }
+        }
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: identifiers)
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: legacyIdentifiers)
     }
 
     static func scheduleTestReminder() async {
@@ -98,7 +106,11 @@ enum NotificationManager {
         try? await UNUserNotificationCenter.current().add(request)
     }
 
-    private static func reminderIdentifier(for bottleId: UUID, weekday: Weekday) -> String {
+    private static func reminderIdentifier(for bottleId: UUID, reminderIndex: Int, weekday: Weekday) -> String {
+        "twistlog.reminder.\(bottleId.uuidString).\(reminderIndex).\(weekday.rawValue)"
+    }
+
+    private static func legacyReminderIdentifier(for bottleId: UUID, weekday: Weekday) -> String {
         "twistlog.reminder.\(bottleId.uuidString).\(weekday.rawValue)"
     }
 

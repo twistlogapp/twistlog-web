@@ -27,17 +27,22 @@ struct BottleDetailView: View {
                         }
                         .padding(.vertical, 6)
 
-                        Button {
-                            if store.shouldWarnRecentOpening(for: bottle) {
-                                showRecentWarning = true
-                            } else {
-                                recordOpening(for: bottle)
+                        if bottle.isArchived {
+                            Label("Archived bottle", systemImage: "archivebox")
+                                .foregroundStyle(TLTheme.gray)
+                        } else {
+                            Button {
+                                if store.shouldWarnRecentOpening(for: bottle) {
+                                    showRecentWarning = true
+                                } else {
+                                    recordOpening(for: bottle)
+                                }
+                            } label: {
+                                Label("Opened now", systemImage: "plus.circle.fill")
                             }
-                        } label: {
-                            Label("Opened now", systemImage: "plus.circle.fill")
+                            .tint(TLTheme.green)
+                            .accessibilityLabel("Record opening for \(bottle.nickname)")
                         }
-                        .tint(TLTheme.green)
-                        .accessibilityLabel("Record opening for \(bottle.nickname)")
 
                         if showSuccess {
                             Label("Opening recorded.", systemImage: "checkmark.circle.fill")
@@ -63,10 +68,19 @@ struct BottleDetailView: View {
                     }
 
                     Section("Reminder") {
-                        if bottle.reminderEnabled {
-                            LabeledContent("Reminder", value: reminderSummary(for: bottle))
-                        } else {
+                        if bottle.enabledReminders.isEmpty {
                             LabeledContent("Reminder", value: "Off")
+                        } else {
+                            ForEach(bottle.enabledReminders) { reminder in
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(reminder.displayTime)
+                                        .font(.headline)
+                                    Text(reminderDaySummary(reminder))
+                                        .font(.caption)
+                                        .foregroundStyle(TLTheme.gray)
+                                }
+                                .padding(.vertical, 2)
+                            }
                         }
                     }
 
@@ -92,17 +106,29 @@ struct BottleDetailView: View {
                     }
 
                     Section {
-                        Button("Archive Bottle", role: .destructive) {
-                            showingArchiveConfirmation = true
+                        if bottle.isArchived {
+                            Button {
+                                store.restoreBottle(id: bottle.id)
+                                dismiss()
+                            } label: {
+                                Label("Restore Bottle", systemImage: "arrow.uturn.backward.circle")
+                            }
+                            .tint(TLTheme.green)
+                        } else {
+                            Button("Archive Bottle", role: .destructive) {
+                                showingArchiveConfirmation = true
+                            }
                         }
                     } footer: {
-                        Text("Archiving hides this bottle from Today but keeps its opening history for reference.")
+                        Text(bottle.isArchived ? "Restoring returns this bottle to Today and re-enables its reminders." : "Archiving hides this bottle from Today but keeps its opening history for reference.")
                     }
                 }
                 .navigationTitle("Details")
                 .toolbar {
-                    Button("Edit") {
-                        showingEditBottle = true
+                    if !bottle.isArchived {
+                        Button("Edit") {
+                            showingEditBottle = true
+                        }
                     }
                 }
                 .sheet(isPresented: $showingEditBottle) {
@@ -177,19 +203,14 @@ struct BottleDetailView: View {
         return "\(hours) hr \(remainder) min"
     }
 
-    private func reminderSummary(for bottle: Bottle) -> String {
-        let date = Calendar.current.date(from: DateComponents(hour: bottle.reminderHour, minute: bottle.reminderMinute)) ?? Date()
-        let time = date.formatted(date: .omitted, time: .shortened)
-
-        if bottle.reminderDays.count == Weekday.allCases.count {
-            return "Daily at \(time)"
+    private func reminderDaySummary(_ reminder: BottleReminder) -> String {
+        if reminder.days.count == Weekday.allCases.count {
+            return "Daily"
         }
 
-        let days = Weekday.allCases
-            .filter { bottle.reminderDays.contains($0) }
+        return Weekday.allCases
+            .filter { reminder.days.contains($0) }
             .map(\.shortName)
             .joined(separator: ", ")
-
-        return "\(days) at \(time)"
     }
 }

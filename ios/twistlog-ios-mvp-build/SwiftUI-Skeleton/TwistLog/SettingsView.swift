@@ -48,6 +48,12 @@ struct SettingsView: View {
 
                 Section("About") {
                     NavigationLink {
+                        ArchivedBottlesView()
+                    } label: {
+                        Label("Archived Bottles", systemImage: "archivebox")
+                    }
+
+                    NavigationLink {
                         AboutView()
                     } label: {
                         Label("About TwistLog", systemImage: "info.circle")
@@ -87,6 +93,49 @@ struct SettingsView: View {
     private func openAppSettings() {
         guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
         UIApplication.shared.open(url)
+    }
+}
+
+struct ArchivedBottlesView: View {
+    @EnvironmentObject private var store: AppStore
+
+    var body: some View {
+        Group {
+            if store.archivedBottles.isEmpty {
+                EmptyStateView(
+                    systemImage: "archivebox",
+                    title: "No archived bottles",
+                    message: "Archived bottles will appear here. Their opening history is kept for reference.",
+                    buttonTitle: nil,
+                    action: nil
+                )
+            } else {
+                List {
+                    ForEach(store.archivedBottles) { bottle in
+                        NavigationLink {
+                            BottleDetailView(bottleId: bottle.id)
+                        } label: {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(bottle.nickname)
+                                    .font(.headline)
+
+                                if let medicationName = bottle.medicationName {
+                                    Text(medicationName)
+                                        .font(.subheadline)
+                                        .foregroundStyle(TLTheme.gray)
+                                }
+
+                                Text("Archived \(bottle.updatedAt.formatted(date: .abbreviated, time: .shortened))")
+                                    .font(.caption)
+                                    .foregroundStyle(TLTheme.gray)
+                            }
+                            .padding(.vertical, 4)
+                        }
+                    }
+                }
+            }
+        }
+        .navigationTitle("Archived Bottles")
     }
 }
 
