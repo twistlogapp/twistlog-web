@@ -84,7 +84,7 @@ Important: TwistLog does not confirm medication was taken, does not verify dosag
 
 No analytics, ad tracking, or third-party SDKs are included in this build.
 
-Guideline 4.3 note: TwistLog is distinct from existing medication reminder apps. It tracks bottle-opening events recorded by the user, not medication ingestion, dosage, or schedules. The core feature is an opening log with a recent-opening alert, not a medication reminder app.
+Guideline 4.3 clarification: TwistLog is intentionally scoped as a personal bottle-opening log, not a medication ingestion, dosage, or clinical adherence app. Users record bottle-opening events manually, can review opening history, and can set local reminder nudges. The recent-opening alert is based on the user's own recorded openings and chosen interval. TwistLog does not verify medication was taken, does not manage dosage, and does not provide medical advice.
 ```
 
 ## App Store Connect Setup Notes
