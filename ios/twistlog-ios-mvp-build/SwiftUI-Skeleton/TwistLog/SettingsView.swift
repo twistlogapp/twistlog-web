@@ -30,15 +30,6 @@ struct SettingsView: View {
                     }
 
                     Button {
-                        Task {
-                            await reminderScheduler.scheduleTestReminder()
-                            await refreshNotificationStatus()
-                        }
-                    } label: {
-                        Label("Send test reminder in 10 seconds", systemImage: "bell.and.waves.left.and.right")
-                    }
-
-                    Button {
                         openAppSettings()
                     } label: {
                         Label("Open iPhone Settings", systemImage: "gearshape")

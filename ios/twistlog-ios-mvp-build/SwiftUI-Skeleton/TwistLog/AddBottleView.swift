@@ -338,22 +338,25 @@ private enum IntervalPreset: CaseIterable, Identifiable {
 
 private struct ReminderEditorView: View {
     @Binding var reminder: BottleReminder
+    @State private var reminderTime: Date
     var onDelete: () -> Void
 
-    private var reminderTime: Binding<Date> {
-        Binding {
-            Self.reminderDate(hour: reminder.hour, minute: reminder.minute)
-        } set: { newValue in
-            let components = Calendar.current.dateComponents([.hour, .minute], from: newValue)
-            reminder.hour = components.hour ?? 8
-            reminder.minute = components.minute ?? 0
-        }
+    init(reminder: Binding<BottleReminder>, onDelete: @escaping () -> Void) {
+        self._reminder = reminder
+        self._reminderTime = State(initialValue: Self.reminderDate(
+            hour: reminder.wrappedValue.hour,
+            minute: reminder.wrappedValue.minute
+        ))
+        self.onDelete = onDelete
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                DatePicker("Reminder time", selection: reminderTime, displayedComponents: .hourAndMinute)
+                DatePicker("Reminder time", selection: $reminderTime, displayedComponents: .hourAndMinute)
+                    .onChange(of: reminderTime) { newValue in
+                        updateReminderTime(newValue)
+                    }
 
                 Button(role: .destructive) {
                     onDelete()
@@ -398,6 +401,12 @@ private struct ReminderEditorView: View {
         } else {
             reminder.days.insert(weekday)
         }
+    }
+
+    private func updateReminderTime(_ date: Date) {
+        let components = Calendar.current.dateComponents([.hour, .minute], from: date)
+        reminder.hour = components.hour ?? 8
+        reminder.minute = components.minute ?? 0
     }
 
     private static func reminderDate(hour: Int, minute: Int) -> Date {
