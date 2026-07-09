@@ -184,34 +184,53 @@ final class AppStore: ObservableObject {
     ) {
         guard let index = bottles.firstIndex(where: { $0.id == id }) else { return }
 
-        bottles[index].nickname = nickname
-        bottles[index].category = category
-        bottles[index].medicationName = medicationName?.nilIfBlank
-        bottles[index].notes = notes?.nilIfBlank
-        bottles[index].minimumIntervalEnabled = minimumIntervalEnabled
-        bottles[index].minimumIntervalMinutes = minimumIntervalEnabled ? minimumIntervalMinutes : nil
-        bottles[index].reminderEnabled = Self.hasActiveReminder(reminders)
-        bottles[index].reminderHour = reminders.first?.hour ?? 8
-        bottles[index].reminderMinute = reminders.first?.minute ?? 0
-        bottles[index].reminderDays = reminders.first?.days ?? Set(Weekday.allCases)
-        bottles[index].reminders = reminders
-        bottles[index].updatedAt = Date()
+        var updatedBottle = bottles[index]
+        updatedBottle.nickname = nickname
+        updatedBottle.category = category
+        updatedBottle.medicationName = medicationName?.nilIfBlank
+        updatedBottle.notes = notes?.nilIfBlank
+        updatedBottle.minimumIntervalEnabled = minimumIntervalEnabled
+        updatedBottle.minimumIntervalMinutes = minimumIntervalEnabled ? minimumIntervalMinutes : nil
+        updatedBottle.reminderEnabled = Self.hasActiveReminder(reminders)
+        updatedBottle.reminderHour = reminders.first?.hour ?? 8
+        updatedBottle.reminderMinute = reminders.first?.minute ?? 0
+        updatedBottle.reminderDays = reminders.first?.days ?? Set(Weekday.allCases)
+        updatedBottle.reminders = reminders
+        updatedBottle.updatedAt = Date()
 
-        scheduleReminderIfNeeded(for: bottles[index])
+        var updatedBottles = bottles
+        updatedBottles[index] = updatedBottle
+        bottles = updatedBottles
+
+        scheduleReminderIfNeeded(for: updatedBottle)
     }
 
     func archiveBottle(id: UUID) {
         guard let index = bottles.firstIndex(where: { $0.id == id }) else { return }
-        bottles[index].isArchived = true
-        bottles[index].updatedAt = Date()
+
+        var updatedBottle = bottles[index]
+        updatedBottle.isArchived = true
+        updatedBottle.updatedAt = Date()
+
+        var updatedBottles = bottles
+        updatedBottles[index] = updatedBottle
+        bottles = updatedBottles
+
         reminderScheduler.cancelReminder(for: id)
     }
 
     func restoreBottle(id: UUID) {
         guard let index = bottles.firstIndex(where: { $0.id == id }) else { return }
-        bottles[index].isArchived = false
-        bottles[index].updatedAt = Date()
-        scheduleReminderIfNeeded(for: bottles[index])
+
+        var updatedBottle = bottles[index]
+        updatedBottle.isArchived = false
+        updatedBottle.updatedAt = Date()
+
+        var updatedBottles = bottles
+        updatedBottles[index] = updatedBottle
+        bottles = updatedBottles
+
+        scheduleReminderIfNeeded(for: updatedBottle)
     }
 
     func deleteOpening(_ event: OpeningEvent) {
