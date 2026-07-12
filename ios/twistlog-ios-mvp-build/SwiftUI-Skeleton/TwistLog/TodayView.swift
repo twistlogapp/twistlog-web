@@ -6,6 +6,7 @@ struct TodayView: View {
     @EnvironmentObject private var store: AppStore
     @State private var showingAddBottle = false
     @State private var currentDate = Date()
+    @State private var searchText = ""
 
     private let clock = Timer.publish(every: 60, on: .main, in: .common).autoconnect()
 
@@ -19,6 +20,14 @@ struct TodayView: View {
                         TodayEmptyPrompt {
                             showingAddBottle = true
                         }
+                    } else if filteredBottles.isEmpty {
+                        EmptyStateView(
+                            systemImage: "magnifyingglass",
+                            title: "No bottles found",
+                            message: "Try another bottle name, medication, or note.",
+                            buttonTitle: nil,
+                            action: nil
+                        )
                     } else {
                         if allBottlesOpenedToday {
                             AllDoneBanner()
@@ -37,6 +46,7 @@ struct TodayView: View {
             .background(TLTheme.lightGray)
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
+            .searchable(text: $searchText, prompt: "Search bottles")
             .onAppear {
                 currentDate = Date()
             }
@@ -62,14 +72,25 @@ struct TodayView: View {
         guard !bottles.isEmpty else { return false }
 
         return bottles.allSatisfy { bottle in
-            guard let last = store.lastOpening(for: bottle) else { return false }
-            return Calendar.current.isDate(last.openedAt, inSameDayAs: currentDate)
+            store.hasOpeningForMedicationDay(containing: currentDate, for: bottle)
+        }
+    }
+
+    private var filteredBottles: [Bottle] {
+        let trimmedSearch = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedSearch.isEmpty else { return store.activeBottles }
+
+        return store.activeBottles.filter { bottle in
+            bottle.nickname.localizedCaseInsensitiveContains(trimmedSearch)
+            || (bottle.medicationName?.localizedCaseInsensitiveContains(trimmedSearch) ?? false)
+            || (bottle.notes?.localizedCaseInsensitiveContains(trimmedSearch) ?? false)
+            || bottle.category.title.localizedCaseInsensitiveContains(trimmedSearch)
         }
     }
 
     private var groupedSections: [BottleCategoryGroup] {
         BottleCategory.allCases.compactMap { category in
-            let bottles = store.activeBottles
+            let bottles = filteredBottles
                 .filter { $0.category == category }
                 .sorted { lhs, rhs in
                     nextReminderDate(for: lhs) < nextReminderDate(for: rhs)
@@ -247,6 +268,10 @@ struct BottleCard: View {
 
     @State private var showRecentWarning = false
     @State private var showSuccess = false
+    @State private var showRecordOptions = false
+    @State private var pendingOpeningDate: Date?
+    @State private var lateOpeningRequest: LateOpeningRequest?
+    @State private var lastRecordedEvent: OpeningEvent?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -291,9 +316,21 @@ struct BottleCard: View {
             }
 
             if showSuccess {
-                Text("Opening recorded.")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(TLTheme.green)
+                HStack(spacing: 10) {
+                    Text("Opening recorded.")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(TLTheme.green)
+
+                    if lastRecordedEvent != nil {
+                        Button("Undo") {
+                            undoLastOpening()
+                        }
+                        .font(.subheadline.weight(.semibold))
+                        .buttonStyle(.plain)
+                        .foregroundStyle(TLTheme.green)
+                        .accessibilityLabel("Undo last opening for \(bottle.nickname)")
+                    }
+                }
             }
 
             actionButtons
@@ -307,12 +344,38 @@ struct BottleCard: View {
                 .frame(width: 5)
         }
         .alert("Recent opening found.", isPresented: $showRecentWarning) {
-            Button("Cancel", role: .cancel) {}
+            Button("Cancel", role: .cancel) {
+                pendingOpeningDate = nil
+            }
             Button("Record anyway", role: .destructive) {
-                recordOpening()
+                recordOpening(at: pendingOpeningDate ?? Date())
+                pendingOpeningDate = nil
             }
         } message: {
             Text(recentWarningMessage)
+        }
+        .confirmationDialog("Record opening", isPresented: $showRecordOptions, titleVisibility: .visible) {
+            Button("Just now") {
+                requestOpening(at: Date())
+            }
+
+            Button("Earlier today") {
+                lateOpeningRequest = .earlierToday(referenceDate: currentDate)
+            }
+
+            Button("Yesterday") {
+                lateOpeningRequest = .yesterday(referenceDate: currentDate)
+            }
+
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Choose when this bottle was opened.")
+        }
+        .sheet(item: $lateOpeningRequest) { request in
+            LateOpeningSheet(request: request) { openedAt in
+                lateOpeningRequest = nil
+                requestOpening(at: openedAt)
+            }
         }
     }
 
@@ -333,11 +396,7 @@ struct BottleCard: View {
 
     private var openedNowButton: some View {
         Button {
-            if store.shouldWarnRecentOpening(for: bottle) {
-                showRecentWarning = true
-            } else {
-                recordOpening()
-            }
+            showRecordOptions = true
         } label: {
             Text("Opened now")
                 .lineLimit(1)
@@ -401,7 +460,7 @@ struct BottleCard: View {
             return "Not opened yet"
         }
 
-        if Calendar.current.isDate(last.openedAt, inSameDayAs: currentDate) {
+        if store.hasOpeningForMedicationDay(containing: currentDate, for: bottle) {
             return "Opened today"
         }
 
@@ -413,8 +472,7 @@ struct BottleCard: View {
     }
 
     private var hasOpenedToday: Bool {
-        guard let last = store.lastOpening(for: bottle) else { return false }
-        return Calendar.current.isDate(last.openedAt, inSameDayAs: currentDate)
+        store.hasOpeningForMedicationDay(containing: currentDate, for: bottle)
     }
 
     private var cardBackground: Color {
@@ -462,16 +520,34 @@ struct BottleCard: View {
             .joined(separator: ", ")
     }
 
-    private func recordOpening() {
-        store.recordOpening(for: bottle)
+    private func requestOpening(at openedAt: Date) {
+        if store.shouldWarnRecentOpening(for: bottle, now: openedAt) {
+            pendingOpeningDate = openedAt
+            showRecentWarning = true
+        } else {
+            recordOpening(at: openedAt)
+        }
+    }
+
+    private func recordOpening(at openedAt: Date) {
+        lastRecordedEvent = store.recordOpening(for: bottle, now: openedAt)
         showSuccess = true
         UINotificationFeedbackGenerator().notificationOccurred(.success)
         Task {
-            try? await Task.sleep(nanoseconds: 2_000_000_000)
+            try? await Task.sleep(nanoseconds: 4_000_000_000)
             await MainActor.run {
                 showSuccess = false
+                lastRecordedEvent = nil
             }
         }
+    }
+
+    private func undoLastOpening() {
+        guard let lastRecordedEvent else { return }
+        store.deleteOpening(lastRecordedEvent)
+        self.lastRecordedEvent = nil
+        showSuccess = false
+        UINotificationFeedbackGenerator().notificationOccurred(.warning)
     }
 }
 
@@ -532,5 +608,88 @@ struct StatusPill: View {
             .foregroundStyle(foregroundColor)
             .background(backgroundColor)
             .clipShape(Capsule())
+    }
+}
+
+struct LateOpeningRequest: Identifiable {
+    let id = UUID()
+    var title: String
+    var initialDate: Date
+    var allowsDateSelection: Bool
+
+    static func earlierToday(referenceDate: Date) -> LateOpeningRequest {
+        LateOpeningRequest(
+            title: "Earlier today",
+            initialDate: Calendar.current.date(byAdding: .hour, value: -1, to: referenceDate) ?? referenceDate,
+            allowsDateSelection: false
+        )
+    }
+
+    static func yesterday(referenceDate: Date) -> LateOpeningRequest {
+        let calendar = Calendar.current
+        let yesterday = calendar.date(byAdding: .day, value: -1, to: referenceDate) ?? referenceDate
+        let initialDate = calendar.date(
+            bySettingHour: calendar.component(.hour, from: referenceDate),
+            minute: calendar.component(.minute, from: referenceDate),
+            second: 0,
+            of: yesterday
+        ) ?? yesterday
+
+        return LateOpeningRequest(
+            title: "Yesterday",
+            initialDate: initialDate,
+            allowsDateSelection: true
+        )
+    }
+}
+
+struct LateOpeningSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @State private var openedAt: Date
+
+    var request: LateOpeningRequest
+    var onRecord: (Date) -> Void
+
+    init(request: LateOpeningRequest, onRecord: @escaping (Date) -> Void) {
+        self.request = request
+        self.onRecord = onRecord
+        self._openedAt = State(initialValue: request.initialDate)
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    DatePicker(
+                        "Opening time",
+                        selection: $openedAt,
+                        in: ...Date(),
+                        displayedComponents: displayedComponents
+                    )
+                } footer: {
+                    Text("Use this when the bottle was opened earlier, but you forgot to record it at the time.")
+                }
+            }
+            .navigationTitle(request.title)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Record") {
+                        onRecord(openedAt)
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
+
+    private var displayedComponents: DatePickerComponents {
+        request.allowsDateSelection ? [.date, .hourAndMinute] : [.hourAndMinute]
     }
 }

@@ -11,6 +11,10 @@ struct BottleDetailView: View {
     @State private var showingArchiveConfirmation = false
     @State private var showRecentWarning = false
     @State private var showSuccess = false
+    @State private var showRecordOptions = false
+    @State private var pendingOpeningDate: Date?
+    @State private var lateOpeningRequest: LateOpeningRequest?
+    @State private var lastRecordedEvent: OpeningEvent?
 
     var body: some View {
         Group {
@@ -32,11 +36,7 @@ struct BottleDetailView: View {
                                 .foregroundStyle(TLTheme.gray)
                         } else {
                             Button {
-                                if store.shouldWarnRecentOpening(for: bottle) {
-                                    showRecentWarning = true
-                                } else {
-                                    recordOpening(for: bottle)
-                                }
+                                showRecordOptions = true
                             } label: {
                                 Label("Opened now", systemImage: "plus.circle.fill")
                             }
@@ -45,8 +45,20 @@ struct BottleDetailView: View {
                         }
 
                         if showSuccess {
-                            Label("Opening recorded.", systemImage: "checkmark.circle.fill")
-                                .foregroundStyle(TLTheme.green)
+                            HStack(spacing: 10) {
+                                Label("Opening recorded.", systemImage: "checkmark.circle.fill")
+                                    .foregroundStyle(TLTheme.green)
+
+                                if lastRecordedEvent != nil {
+                                    Button("Undo") {
+                                        undoLastOpening()
+                                    }
+                                    .font(.subheadline.weight(.semibold))
+                                    .buttonStyle(.plain)
+                                    .foregroundStyle(TLTheme.green)
+                                    .accessibilityLabel("Undo last opening for \(bottle.nickname)")
+                                }
+                            }
                         }
                     }
 
@@ -148,12 +160,38 @@ struct BottleDetailView: View {
                     Text("The bottle will be hidden from Today. Existing opening history will remain.")
                 }
                 .alert("Recent opening found.", isPresented: $showRecentWarning) {
-                    Button("Cancel", role: .cancel) {}
+                    Button("Cancel", role: .cancel) {
+                        pendingOpeningDate = nil
+                    }
                     Button("Record anyway", role: .destructive) {
-                        recordOpening(for: bottle)
+                        recordOpening(for: bottle, at: pendingOpeningDate ?? Date())
+                        pendingOpeningDate = nil
                     }
                 } message: {
                     Text(recentWarningMessage(for: bottle))
+                }
+                .confirmationDialog("Record opening", isPresented: $showRecordOptions, titleVisibility: .visible) {
+                    Button("Just now") {
+                        requestOpening(for: bottle, at: Date())
+                    }
+
+                    Button("Earlier today") {
+                        lateOpeningRequest = .earlierToday(referenceDate: Date())
+                    }
+
+                    Button("Yesterday") {
+                        lateOpeningRequest = .yesterday(referenceDate: Date())
+                    }
+
+                    Button("Cancel", role: .cancel) {}
+                } message: {
+                    Text("Choose when this bottle was opened.")
+                }
+                .sheet(item: $lateOpeningRequest) { request in
+                    LateOpeningSheet(request: request) { openedAt in
+                        lateOpeningRequest = nil
+                        requestOpening(for: bottle, at: openedAt)
+                    }
                 }
             } else {
                 ContentUnavailableView(
@@ -165,16 +203,34 @@ struct BottleDetailView: View {
         }
     }
 
-    private func recordOpening(for bottle: Bottle) {
-        store.recordOpening(for: bottle)
+    private func requestOpening(for bottle: Bottle, at openedAt: Date) {
+        if store.shouldWarnRecentOpening(for: bottle, now: openedAt) {
+            pendingOpeningDate = openedAt
+            showRecentWarning = true
+        } else {
+            recordOpening(for: bottle, at: openedAt)
+        }
+    }
+
+    private func recordOpening(for bottle: Bottle, at openedAt: Date) {
+        lastRecordedEvent = store.recordOpening(for: bottle, now: openedAt)
         showSuccess = true
         UINotificationFeedbackGenerator().notificationOccurred(.success)
         Task {
-            try? await Task.sleep(nanoseconds: 2_000_000_000)
+            try? await Task.sleep(nanoseconds: 4_000_000_000)
             await MainActor.run {
                 showSuccess = false
+                lastRecordedEvent = nil
             }
         }
+    }
+
+    private func undoLastOpening() {
+        guard let lastRecordedEvent else { return }
+        store.deleteOpening(lastRecordedEvent)
+        self.lastRecordedEvent = nil
+        showSuccess = false
+        UINotificationFeedbackGenerator().notificationOccurred(.warning)
     }
 
     private func recentWarningMessage(for bottle: Bottle) -> String {

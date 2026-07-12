@@ -176,6 +176,10 @@ struct BottleReminder: Identifiable, Hashable, Codable {
         let date = Calendar.current.date(from: DateComponents(hour: hour, minute: minute)) ?? Date()
         return date.formatted(date: .omitted, time: .shortened)
     }
+
+    var minuteOfDay: Int {
+        hour * 60 + minute
+    }
 }
 
 struct OpeningEvent: Identifiable, Hashable, Codable {
@@ -249,5 +253,38 @@ enum Weekday: Int, CaseIterable, Codable {
         case .friday: return "Fr"
         case .saturday: return "Sa"
         }
+    }
+}
+
+extension Bottle {
+    var medicationDayAnchorMinute: Int? {
+        enabledReminders
+            .map(\.minuteOfDay)
+            .min()
+    }
+
+    func medicationDayInterval(containing date: Date, calendar: Calendar = .current) -> DateInterval {
+        guard let anchorMinute = medicationDayAnchorMinute else {
+            let start = calendar.startOfDay(for: date)
+            let end = calendar.date(byAdding: .day, value: 1, to: start) ?? date
+            return DateInterval(start: start, end: end)
+        }
+
+        let startOfCalendarDay = calendar.startOfDay(for: date)
+        let anchorHour = anchorMinute / 60
+        let anchorMinuteRemainder = anchorMinute % 60
+        let anchorToday = calendar.date(
+            bySettingHour: anchorHour,
+            minute: anchorMinuteRemainder,
+            second: 0,
+            of: startOfCalendarDay
+        ) ?? startOfCalendarDay
+
+        let start = date >= anchorToday
+            ? anchorToday
+            : (calendar.date(byAdding: .day, value: -1, to: anchorToday) ?? anchorToday)
+        let end = calendar.date(byAdding: .day, value: 1, to: start) ?? date
+
+        return DateInterval(start: start, end: end)
     }
 }

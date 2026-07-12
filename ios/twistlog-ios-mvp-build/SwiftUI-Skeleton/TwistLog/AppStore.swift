@@ -67,6 +67,20 @@ final class AppStore: ObservableObject {
         )
     }
 
+    func openingForMedicationDay(containing date: Date = Date(), for bottle: Bottle) -> OpeningEvent? {
+        let interval = bottle.medicationDayInterval(containing: date)
+        return openingEvents
+            .filter { event in
+                event.bottleId == bottle.id && interval.contains(event.openedAt)
+            }
+            .sorted { $0.openedAt > $1.openedAt }
+            .first
+    }
+
+    func hasOpeningForMedicationDay(containing date: Date = Date(), for bottle: Bottle) -> Bool {
+        openingForMedicationDay(containing: date, for: bottle) != nil
+    }
+
     func shouldWarnRecentOpening(for bottle: Bottle, now: Date = Date()) -> Bool {
         guard bottle.minimumIntervalEnabled,
               let minutes = bottle.minimumIntervalMinutes,
@@ -74,17 +88,18 @@ final class AppStore: ObservableObject {
         else { return false }
 
         let elapsed = now.timeIntervalSince(last.openedAt)
-        return elapsed < Double(minutes * 60)
+        return elapsed >= 0 && elapsed < Double(minutes * 60)
     }
 
-    func recordOpening(for bottle: Bottle, source: OpeningSource = .manual, now: Date = Date()) {
-        openingEvents.append(
-            OpeningEvent(
-                bottleId: bottle.id,
-                openedAt: now,
-                source: source
-            )
+    @discardableResult
+    func recordOpening(for bottle: Bottle, source: OpeningSource = .manual, now: Date = Date()) -> OpeningEvent {
+        let event = OpeningEvent(
+            bottleId: bottle.id,
+            openedAt: min(now, Date()),
+            source: source
         )
+        openingEvents.append(event)
+        return event
     }
 
     func addBottle(

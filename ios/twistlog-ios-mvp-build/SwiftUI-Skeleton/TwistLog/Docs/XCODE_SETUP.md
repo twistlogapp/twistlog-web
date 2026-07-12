@@ -34,8 +34,7 @@ The first run should show:
 - `Opened now` recording local persisted events.
 - Bottles and opening history still present after app restart.
 - Bottle type, reminder on/off, multiple reminder times, and weekday selection in Add/Edit Bottle.
-- Local notification permission controls in Settings.
-- Test reminder button in Settings that schedules a notification after 10 seconds.
+- Notification permission controls in Settings.
 - Settings links opening `https://twistlog.com`, `/privacy`, and `/terms`.
 
 ## Later Persistence Upgrade

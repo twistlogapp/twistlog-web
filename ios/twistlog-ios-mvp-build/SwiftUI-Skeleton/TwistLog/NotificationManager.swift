@@ -59,8 +59,8 @@ enum NotificationManager {
                 components.minute = reminder.minute
 
                 let content = UNMutableNotificationContent()
-                content.title = "Time to check your \(bottle.nickname)."
-                content.body = "Open TwistLog to view recent openings."
+                content.title = "\(bottle.nickname) reminder"
+                content.body = "Time to check your bottle."
                 content.sound = .default
 
                 let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
