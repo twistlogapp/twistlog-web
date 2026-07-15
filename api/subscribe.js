@@ -26,7 +26,7 @@ module.exports = async function handler(req, res) {
       body: JSON.stringify({
         from: 'TwistLog <hello@twistlog.com>',
         to: ['twistlog.app@gmail.com'],
-        subject: 'New TwistLog Waitlist Signup',
+        subject: 'New TwistLog Update Signup',
         html: `<p>New signup: <strong>${normalizedEmail}</strong></p>`,
       }),
     });
@@ -45,8 +45,8 @@ module.exports = async function handler(req, res) {
       body: JSON.stringify({
         from: 'TwistLog <hello@twistlog.com>',
         to: [normalizedEmail],
-        subject: "You're on the TwistLog waitlist",
-        html: `<p>Thanks for joining the TwistLog waitlist.</p><p>We'll send prototype updates and early access timing when ready.</p>`,
+        subject: "You're on the TwistLog update list",
+        html: `<p>Thanks for joining the TwistLog update list.</p><p>We'll send product updates, prototype notes, and future feature news when ready.</p>`,
       }),
     });
 

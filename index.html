@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="TwistLog is a simple bottle-opening tracker for logging medication bottle activity, checking recent history, and supporting reminder routines." />
-  <title>TwistLog | Medication Bottle Opening Tracker</title>
+  <meta name="description" content="TwistLog is an iPhone bottle-opening tracker for recording openings, checking recent history, and setting reminder nudges. Available now on the App Store." />
+  <title>TwistLog | iPhone Bottle Opening Tracker</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -132,6 +132,64 @@
       background: var(--white);
       color: var(--green-dark);
       border-color: var(--line);
+    }
+
+    .app-store-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 54px;
+      padding: 8px 16px 9px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 12px;
+      background: #070907;
+      color: var(--white);
+      text-decoration: none;
+      box-shadow: 0 14px 35px rgba(22, 32, 27, 0.18);
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .app-store-badge:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 18px 42px rgba(22, 32, 27, 0.24);
+    }
+
+    .app-store-icon {
+      display: inline-grid;
+      place-items: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: var(--green);
+      color: var(--white);
+      font-size: 0.85rem;
+      font-weight: 900;
+      letter-spacing: -0.06em;
+    }
+
+    .app-store-copy {
+      display: grid;
+      line-height: 1.05;
+    }
+
+    .app-store-copy small {
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      opacity: 0.86;
+    }
+
+    .app-store-copy strong {
+      font-size: 1.08rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    .availability-note {
+      max-width: 520px;
+      margin: -14px 0 26px;
+      color: var(--muted);
+      font-size: 0.9rem;
     }
 
     .hero {
@@ -592,11 +650,11 @@
       font-size: 0.94rem;
     }
 
-    .waitlist {
+    .download {
       background: linear-gradient(180deg, var(--mist), var(--paper));
     }
 
-    .waitlist-box {
+    .download-box {
       display: grid;
       grid-template-columns: minmax(0, 0.95fr) minmax(320px, 0.65fr);
       gap: 42px;
@@ -608,7 +666,7 @@
       box-shadow: var(--shadow);
     }
 
-    .waitlist h2 {
+    .download h2 {
       margin-bottom: 12px;
     }
 
@@ -698,7 +756,7 @@
       .nav-links a:not(.nav-cta) { display: none; }
       .hero-inner,
       .split,
-      .waitlist-box {
+      .download-box {
         grid-template-columns: 1fr;
       }
       .hero-inner {
@@ -795,7 +853,7 @@
       .section {
         padding: 68px 0;
       }
-      .waitlist-box {
+      .download-box {
         padding: 26px;
       }
       .input-row {
@@ -818,7 +876,7 @@
       <div class="nav-links">
         <a href="#how">How it works</a>
         <a href="#safety">Safety</a>
-        <a class="nav-cta" href="#waitlist">Join waitlist</a>
+        <a class="nav-cta" href="#download">Get the app</a>
       </div>
     </nav>
   </header>
@@ -827,13 +885,20 @@
     <section class="hero" aria-labelledby="hero-title">
       <div class="hero-inner">
         <div>
-          <div class="eyebrow">iOS tracker in development</div>
+          <div class="eyebrow">Now available on the App Store</div>
           <h1 id="hero-title">Know when the <span>bottle</span> was opened.</h1>
-          <p class="hero-copy">Manual log or NFC tap today. Sensor ring detection is in prototype. TwistLog helps you check recent bottle-opening activity and get reminder nudges on iPhone and Apple Watch.</p>
+          <p class="hero-copy">TwistLog is an iPhone bottle-opening tracker for recording openings, checking recent history, and setting reminder nudges. The first App Store release is live now.</p>
           <div class="hero-actions">
-            <a class="button" href="#waitlist">Get early access</a>
+            <a class="app-store-badge" href="https://apps.apple.com/us/app/twistlog/id6787179334" aria-label="Download TwistLog on the App Store">
+              <span class="app-store-icon" aria-hidden="true">TL</span>
+              <span class="app-store-copy">
+                <small>Download on the</small>
+                <strong>App Store</strong>
+              </span>
+            </a>
             <a class="button secondary" href="#how">How it works</a>
           </div>
+          <p class="availability-note">Available now for iPhone on the App Store.</p>
           <div class="hero-notes" aria-label="Product highlights">
             <div class="note">
               <span class="note-icon" aria-hidden="true">TAP</span>
@@ -848,7 +913,7 @@
             <div class="note">
               <span class="note-icon" aria-hidden="true">APP</span>
               <strong>Reminder nudges</strong>
-              <span>Designed for timely iPhone and Apple Watch routine reminders.</span>
+              <span>Set local iPhone reminders to check a bottle when routines get fuzzy.</span>
             </div>
           </div>
         </div>
@@ -903,7 +968,7 @@
       <div class="section-header">
         <div class="section-kicker">How it works</div>
         <h2 id="how-title">A simple loop for a high-stress moment.</h2>
-        <p>TwistLog starts as a simple app loop: log the opening, check history, and use reminders when routines get fuzzy. Prototype hardware can later make the opening log automatic.</p>
+          <p>TwistLog starts as a simple iPhone app loop: log the opening, check history, and use reminders when routines get fuzzy. Prototype hardware can later make the opening log automatic.</p>
       </div>
       <div class="steps">
         <article class="step">
@@ -919,7 +984,7 @@
         <article class="step">
           <div class="step-icon" aria-hidden="true">Nudge</div>
           <h3>Get reminder nudges</h3>
-          <p>Use iPhone and Apple Watch reminders for routines that are easy to miss.</p>
+          <p>Use local iPhone reminders for routines that are easy to miss.</p>
         </article>
         <article class="step">
           <div class="step-icon" aria-hidden="true">Proto</div>
@@ -968,12 +1033,12 @@
         <div class="section-header">
           <div class="section-kicker">Built carefully</div>
           <h2 id="safety-title">Clear language. Clear limits.</h2>
-          <p>TwistLog is being built as a reminder and bottle-opening log, not as a medical device. That distinction should be visible in the product, the app, and the website from day one.</p>
+          <p>TwistLog is a reminder and bottle-opening log, not a medical device. That distinction stays visible in the product, the app, and the website.</p>
         </div>
         <div class="safety-grid">
           <article class="safety-item">
             <h3>Opening, not ingestion</h3>
-            <p>TwistLog tracks when a bottle appears to be opened. It does not verify that medicine was swallowed.</p>
+            <p>TwistLog records bottle-opening events based on user input. It does not verify that medicine was swallowed.</p>
           </article>
           <article class="safety-item">
             <h3>Reference, not advice</h3>
@@ -981,28 +1046,36 @@
           </article>
           <article class="safety-item">
             <h3>Privacy-minded</h3>
-            <p>The product should make medication names, logs, and sharing choices explicit before launch.</p>
+            <p>The iPhone app is built local-first for this release. Future sharing features should stay explicit and opt-in.</p>
           </article>
         </div>
       </div>
     </section>
 
-    <section class="waitlist" id="waitlist" aria-labelledby="waitlist-title">
+    <section class="download" id="download" aria-labelledby="download-title">
       <div class="section">
-        <div class="waitlist-box">
+        <div class="download-box">
           <div>
-            <div class="section-kicker">Early access</div>
-            <h2 id="waitlist-title">Join the waitlist.</h2>
-            <p>Join for early access to the iOS tracker, prototype hardware updates, and launch timing. No spam, no daily drip campaign.</p>
+            <div class="section-kicker">Now available</div>
+            <h2 id="download-title">Get TwistLog for iPhone.</h2>
+            <p>TwistLog is live on the App Store for iPhone. Download it now and start recording bottle-opening events in one tap.</p>
+            <a class="app-store-badge" href="https://apps.apple.com/us/app/twistlog/id6787179334" aria-label="Download TwistLog on the App Store">
+              <span class="app-store-icon" aria-hidden="true">TL</span>
+              <span class="app-store-copy">
+                <small>Download on the</small>
+                <strong>App Store</strong>
+              </span>
+            </a>
           </div>
           <form class="signup-form" id="signupForm" onsubmit="handleSubmit(event)">
+            <h3>Follow prototype updates</h3>
             <div class="input-row">
               <input type="email" id="emailInput" placeholder="you@example.com" required autocomplete="email" aria-label="Email address" />
-              <button type="submit" id="submitBtn">Join waitlist</button>
+              <button type="submit" id="submitBtn">Get updates</button>
             </div>
-            <p class="status-msg success" id="successMsg">You're on the list. Check your inbox for confirmation.</p>
+            <p class="status-msg success" id="successMsg">You're on the update list. Check your inbox for confirmation.</p>
             <p class="status-msg error" id="errorMsg">Something went wrong. Please try again.</p>
-            <p class="form-note">By joining, you agree to receive TwistLog launch updates. You can unsubscribe anytime.</p>
+            <p class="form-note">Join for product updates, prototype hardware notes, and future feature news. You can unsubscribe anytime.</p>
           </form>
         </div>
       </div>
@@ -1033,7 +1106,7 @@
       const errorMsg = document.getElementById("errorMsg");
 
       btn.disabled = true;
-      btn.textContent = "Joining...";
+      btn.textContent = "Saving...";
       successMsg.classList.remove("show");
       errorMsg.classList.remove("show");
 
@@ -1055,7 +1128,7 @@
       } catch {
         errorMsg.classList.add("show");
         btn.disabled = false;
-        btn.textContent = "Join waitlist";
+        btn.textContent = "Get updates";
       }
     }
   </script>
