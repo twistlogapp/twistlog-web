@@ -264,49 +264,38 @@ private struct BottleCategorySection: View {
 
 struct BottleCard: View {
     @EnvironmentObject private var store: AppStore
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     var bottle: Bottle
     var currentDate: Date
 
     @State private var showRecentWarning = false
     @State private var showSuccess = false
     @State private var showRecordOptions = false
+    @State private var showingDetails = false
     @State private var pendingOpeningDate: Date?
     @State private var lateOpeningRequest: LateOpeningRequest?
     @State private var lastRecordedEvent: OpeningEvent?
-    @State private var didLongPressOpenedNow = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(bottle.nickname)
-                        .font(.headline)
-                        .foregroundStyle(TLTheme.text)
-
-                    if let medicationName = bottle.medicationName {
-                        Text(medicationName)
-                            .font(.subheadline)
-                            .foregroundStyle(TLTheme.text)
-                    }
+            HStack(alignment: .center, spacing: 14) {
+                Button {
+                    showingDetails = true
+                } label: {
+                    cardDetails
                 }
+                .buttonStyle(.plain)
+                .accessibilityLabel("View details for \(bottle.nickname)")
 
-                Spacer()
-
-                StatusPill(status: todayStatus)
-            }
-
-            if bottle.enabledReminders.isEmpty, hasAnyOpening {
-                Label(compactDetailText, systemImage: compactDetailIcon)
-                    .font(.subheadline)
-                    .foregroundStyle(TLTheme.gray)
-                    .accessibilityElement(children: .combine)
-            }
-
-            if !bottle.enabledReminders.isEmpty {
-                Label(reminderSummary, systemImage: "bell")
-                    .font(.caption)
-                    .foregroundStyle(TLTheme.gray)
+                OpeningRingAction(
+                    status: todayStatus,
+                    bottleName: bottle.nickname,
+                    onTap: {
+                        showRecordOptions = true
+                    },
+                    onLongPress: {
+                        requestOpening(at: Date())
+                    }
+                )
             }
 
             if showSuccess {
@@ -326,8 +315,6 @@ struct BottleCard: View {
                     }
                 }
             }
-
-            actionButtons
         }
         .padding(16)
         .background(cardBackground)
@@ -371,100 +358,73 @@ struct BottleCard: View {
                 requestOpening(at: openedAt)
             }
         }
-    }
-
-    @ViewBuilder
-    private var actionButtons: some View {
-        if dynamicTypeSize.isAccessibilitySize {
-            VStack(spacing: 10) {
-                openedNowButton
-                detailsLink
-            }
-        } else {
-            HStack {
-                openedNowButton
-                detailsLink
-            }
-        }
-    }
-
-    private var openedNowButton: some View {
-        Button {
-            if didLongPressOpenedNow {
-                didLongPressOpenedNow = false
-            } else {
-                showRecordOptions = true
-            }
-        } label: {
-            Text("Opened now")
-                .lineLimit(1)
-                .minimumScaleFactor(0.85)
-                .frame(maxWidth: .infinity)
-        }
-        .buttonStyle(.borderedProminent)
-        .tint(TLTheme.green)
-        .accessibilityLabel("Record opening for \(bottle.nickname)")
-        .accessibilityHint("Tap for logging options. Long press to record just now.")
-        .simultaneousGesture(
-            LongPressGesture(minimumDuration: 0.5)
-                .onEnded { _ in
-                    didLongPressOpenedNow = true
-                    requestOpening(at: Date())
-                }
-        )
-    }
-
-    private var detailsLink: some View {
-        NavigationLink {
+        .navigationDestination(isPresented: $showingDetails) {
             BottleDetailView(bottleId: bottle.id)
-        } label: {
-            detailsLabel
         }
-        .foregroundStyle(TLTheme.text)
-        .background(TLTheme.green.opacity(0.14))
-        .clipShape(Capsule())
-        .buttonStyle(.plain)
-        .accessibilityLabel("View details for \(bottle.nickname)")
     }
 
-    @ViewBuilder
-    private var detailsLabel: some View {
-        if dynamicTypeSize.isAccessibilitySize {
-            Text("Details")
-                .font(.headline)
+    private var cardDetails: some View {
+        VStack(alignment: .leading, spacing: 9) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(bottle.nickname)
+                    .font(.headline)
+                    .foregroundStyle(TLTheme.text)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.85)
+
+                if let medicationName = bottle.medicationName {
+                    Text(medicationName)
+                        .font(.subheadline)
+                        .foregroundStyle(TLTheme.text)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.85)
+                }
+            }
+
+            if !bottle.enabledReminders.isEmpty {
+                Label(reminderSummary, systemImage: "bell")
+                    .font(.caption)
+                    .foregroundStyle(TLTheme.gray)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+            }
+
+            Label(statusDetailText, systemImage: statusDetailIcon)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(todayStatus.accentColor)
                 .lineLimit(1)
-                .minimumScaleFactor(0.85)
-                .frame(maxWidth: .infinity)
-                .padding(.horizontal, 18)
-                .padding(.vertical, 8)
-        } else {
-            Text("Details")
-                .font(.headline)
-                .lineLimit(1)
-                .minimumScaleFactor(0.85)
-                .padding(.horizontal, 18)
-                .padding(.vertical, 8)
+                .minimumScaleFactor(0.8)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .contentShape(Rectangle())
+    }
+
+    private var statusDetailText: String {
+        switch todayStatus {
+        case let .opened(time):
+            return "Last opened \(time)"
+        case let .due(time):
+            return "Due \(time)"
+        case let .upcoming(time):
+            return "Next due \(time)"
+        case let .yesterday(time):
+            return "Opened yesterday \(time)"
+        case let .lastOpened(date):
+            return "Last opened \(date)"
+        case .notOpened:
+            return "Not opened yet"
         }
     }
 
-    private var compactDetailText: String {
-        guard let last = store.lastOpening(for: bottle) else {
-            return "No openings recorded"
+    private var statusDetailIcon: String {
+        switch todayStatus {
+        case .opened, .yesterday, .lastOpened:
+            return "checkmark.circle"
+        case .due:
+            return "hourglass"
+        case .upcoming, .notOpened:
+            return "clock"
         }
-
-        if Calendar.current.isDateInToday(last.openedAt) {
-            return "Last opened \(last.openedAt.formatted(date: .omitted, time: .shortened))"
-        }
-
-        if Calendar.current.isDateInYesterday(last.openedAt) {
-            return "Last opened yesterday"
-        }
-
-        return "Last opened \(last.openedAt.formatted(date: .abbreviated, time: .omitted))"
-    }
-
-    private var compactDetailIcon: String {
-        hasAnyOpening ? "clock" : "bell"
     }
 
     private var recentWarningMessage: String {
@@ -661,6 +621,95 @@ struct EmptyStateView: View {
         .padding(28)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(TLTheme.lightGray)
+    }
+}
+
+struct OpeningRingAction: View {
+    var status: TodayBottleStatus
+    var bottleName: String
+    var onTap: () -> Void
+    var onLongPress: () -> Void
+
+    @State private var didLongPress = false
+
+    var body: some View {
+        Button {
+            if didLongPress {
+                didLongPress = false
+            } else {
+                onTap()
+            }
+        } label: {
+            VStack(spacing: 4) {
+                OpeningRingMark(color: status.accentColor)
+
+                Text(caption)
+                    .font(.caption2.weight(.bold))
+                    .foregroundStyle(status.accentColor)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+            }
+            .frame(width: 76)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Record opening for \(bottleName)")
+        .accessibilityHint("Tap for logging options. Long press to record just now.")
+        .simultaneousGesture(
+            LongPressGesture(minimumDuration: 0.5)
+                .onEnded { _ in
+                    didLongPress = true
+                    onLongPress()
+                }
+        )
+    }
+
+    private var caption: String {
+        switch status {
+        case let .opened(time):
+            return time
+        case let .due(time):
+            return "Due \(time)"
+        case let .upcoming(time):
+            return time
+        case let .yesterday(time):
+            return "Yest \(time)"
+        case let .lastOpened(date):
+            return date
+        case .notOpened:
+            return "Tap"
+        }
+    }
+}
+
+struct OpeningRingMark: View {
+    var color: Color
+
+    var body: some View {
+        ZStack(alignment: .topTrailing) {
+            Circle()
+                .trim(from: 0.08, to: 0.92)
+                .stroke(
+                    color,
+                    style: StrokeStyle(lineWidth: 5, lineCap: .round)
+                )
+                .rotationEffect(.degrees(18))
+                .frame(width: 52, height: 52)
+
+            Circle()
+                .fill(TLTheme.orange)
+                .frame(width: 11, height: 11)
+                .overlay {
+                    Circle()
+                        .stroke(TLTheme.cardBackground, lineWidth: 2)
+                }
+                .offset(x: -5, y: 4)
+        }
+        .frame(width: 58, height: 58)
+        .padding(6)
+        .background(TLTheme.cardBackground)
+        .clipShape(Circle())
+        .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 4)
     }
 }
 
