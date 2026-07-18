@@ -221,14 +221,6 @@ struct AboutView: View {
                 Link(destination: URL(string: "https://twistlog.com")!) {
                     Label("Website", systemImage: "safari")
                 }
-
-                Link(destination: URL(string: "https://twistlog.com/privacy")!) {
-                    Label("Privacy Policy", systemImage: "hand.raised")
-                }
-
-                Link(destination: URL(string: "https://twistlog.com/terms")!) {
-                    Label("Terms", systemImage: "doc.text")
-                }
             }
 
             Section("App") {
