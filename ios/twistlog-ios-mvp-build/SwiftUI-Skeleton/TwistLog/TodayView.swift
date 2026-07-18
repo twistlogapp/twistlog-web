@@ -704,7 +704,7 @@ struct OpeningRingMark: View {
                 radius: radius,
                 startAngle: start,
                 endAngle: end,
-                clockwise: true
+                clockwise: false
             )
             context.stroke(
                 arc,
