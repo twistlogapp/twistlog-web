@@ -685,8 +685,8 @@ struct OpeningRingAction: View {
 struct OpeningRingMark: View {
     var color: Color
 
-    private let startAngle: Double = 42
-    private let endAngle: Double = 330
+    private let startAngle: Double = 24
+    private let endAngle: Double = 334
     private let markDiameter: CGFloat = 58
     private let strokeWidth: CGFloat = 5
     private let dotDiameter: CGFloat = 12
