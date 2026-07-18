@@ -14,7 +14,7 @@ struct TodayView: View {
         NavigationStack {
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 18) {
-                    TodayHeader(currentDate: currentDate)
+                    TodayHeader(currentDate: currentDate, displayName: store.displayName)
 
                     if store.activeBottles.isEmpty {
                         TodayEmptyPrompt {
@@ -119,6 +119,7 @@ struct TodayView: View {
 
 private struct TodayHeader: View {
     var currentDate: Date
+    var displayName: String
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -137,15 +138,23 @@ private struct TodayHeader: View {
 
     private var greeting: String {
         let hour = Calendar.current.component(.hour, from: currentDate)
+        let baseGreeting: String
 
         switch hour {
         case 5..<12:
-            return "Good morning"
+            baseGreeting = "Good morning"
         case 12..<17:
-            return "Good afternoon"
+            baseGreeting = "Good afternoon"
         default:
-            return "Good evening"
+            baseGreeting = "Good evening"
         }
+
+        let trimmedName = displayName.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmedName.isEmpty {
+            return baseGreeting
+        }
+
+        return "\(baseGreeting), \(trimmedName)"
     }
 
     private var formattedDate: String {

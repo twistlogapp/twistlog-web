@@ -13,6 +13,9 @@ final class AppStore: ObservableObject {
     @Published var hasCompletedOnboarding: Bool {
         didSet { save() }
     }
+    @Published var displayName: String {
+        didSet { save() }
+    }
 
     private let storageKey = "twistlog.appState.v1"
     private let reminderScheduler: ReminderScheduling
@@ -22,12 +25,14 @@ final class AppStore: ObservableObject {
         bottles: [Bottle] = [],
         openingEvents: [OpeningEvent] = [],
         hasCompletedOnboarding: Bool = false,
+        displayName: String = "",
         loadSavedState: Bool = true,
         reminderScheduler: ReminderScheduling = NotificationManager.liveScheduler
     ) {
         self.bottles = bottles
         self.openingEvents = openingEvents
         self.hasCompletedOnboarding = hasCompletedOnboarding
+        self.displayName = displayName
         self.reminderScheduler = reminderScheduler
 
         if loadSavedState {
@@ -263,6 +268,7 @@ final class AppStore: ObservableObject {
         bottles = state.bottles
         openingEvents = state.openingEvents
         hasCompletedOnboarding = state.hasCompletedOnboarding
+        displayName = state.displayName
     }
 
     private func save() {
@@ -271,7 +277,8 @@ final class AppStore: ObservableObject {
         let state = PersistedAppState(
             bottles: bottles,
             openingEvents: openingEvents,
-            hasCompletedOnboarding: hasCompletedOnboarding
+            hasCompletedOnboarding: hasCompletedOnboarding,
+            displayName: displayName
         )
 
         guard let data = try? JSONEncoder().encode(state) else { return }
@@ -344,6 +351,34 @@ private struct PersistedAppState: Codable {
     var bottles: [Bottle]
     var openingEvents: [OpeningEvent]
     var hasCompletedOnboarding: Bool
+    var displayName: String = ""
+
+    enum CodingKeys: String, CodingKey {
+        case bottles
+        case openingEvents
+        case hasCompletedOnboarding
+        case displayName
+    }
+
+    init(
+        bottles: [Bottle],
+        openingEvents: [OpeningEvent],
+        hasCompletedOnboarding: Bool,
+        displayName: String = ""
+    ) {
+        self.bottles = bottles
+        self.openingEvents = openingEvents
+        self.hasCompletedOnboarding = hasCompletedOnboarding
+        self.displayName = displayName
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        bottles = try container.decode([Bottle].self, forKey: .bottles)
+        openingEvents = try container.decode([OpeningEvent].self, forKey: .openingEvents)
+        hasCompletedOnboarding = try container.decode(Bool.self, forKey: .hasCompletedOnboarding)
+        displayName = try container.decodeIfPresent(String.self, forKey: .displayName) ?? ""
+    }
 }
 
 private extension String {

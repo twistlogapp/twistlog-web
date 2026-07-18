@@ -3,6 +3,7 @@ import UIKit
 import UserNotifications
 
 struct SettingsView: View {
+    @EnvironmentObject private var store: AppStore
     @State private var notificationStatus: UNAuthorizationStatus = .notDetermined
     private let reminderScheduler: ReminderScheduling = NotificationManager.liveScheduler
 
@@ -14,6 +15,16 @@ struct SettingsView: View {
                         .foregroundStyle(TLTheme.gray)
 
                     Text("Your data is stored locally on this device. TwistLog does not sync bottle history to an account or cloud service.")
+                        .foregroundStyle(TLTheme.gray)
+                }
+
+                Section("Personalization") {
+                    TextField("Name or initials", text: $store.displayName)
+                        .textInputAutocapitalization(.words)
+                        .autocorrectionDisabled()
+
+                    Text("Used only for the Today greeting. Stored locally on this device.")
+                        .font(.footnote)
                         .foregroundStyle(TLTheme.gray)
                 }
 
@@ -51,12 +62,6 @@ struct SettingsView: View {
                 }
 
                 Section("About") {
-                    NavigationLink {
-                        ArchivedBottlesView()
-                    } label: {
-                        Label("Archived Bottles", systemImage: "archivebox")
-                    }
-
                     NavigationLink {
                         AboutView()
                     } label: {
