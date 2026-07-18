@@ -6,28 +6,50 @@ struct OpeningHistoryView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                LazyVStack(alignment: .leading, spacing: 18) {
+            List {
+                Section {
                     HistoryHeader()
+                        .listRowInsets(EdgeInsets(top: 18, leading: 16, bottom: 8, trailing: 16))
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
 
                     if store.openingEvents.isEmpty {
                         HistoryEmptyPrompt()
-                    } else {
-                        ForEach(groupedEvents) { section in
-                            OpeningHistorySectionView(
-                                section: section,
-                                bottleName: { event in
-                                    bottleName(for: event)
-                                },
-                                onDelete: { event in
-                                    eventPendingDeletion = event
-                                }
-                            )
-                        }
+                            .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.clear)
                     }
                 }
-                .padding()
+
+                if !store.openingEvents.isEmpty {
+                    ForEach(groupedEvents) { section in
+                        Section {
+                            ForEach(section.events) { event in
+                                OpeningRow(
+                                    event: event,
+                                    bottleName: bottleName(for: event),
+                                    style: .card,
+                                    onDelete: {
+                                        eventPendingDeletion = event
+                                    }
+                                )
+                                .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                                .listRowSeparator(.hidden)
+                                .listRowBackground(Color.clear)
+                            }
+                        } header: {
+                            Text(section.title)
+                                .font(.headline.weight(.semibold))
+                                .foregroundStyle(TLTheme.green)
+                                .textCase(nil)
+                                .padding(.leading, 4)
+                        }
+                        .headerProminence(.increased)
+                    }
+                }
             }
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
             .background(TLTheme.lightGray)
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
@@ -146,34 +168,6 @@ private struct HistoryEmptyPrompt: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(TLTheme.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-    }
-}
-
-private struct OpeningHistorySectionView: View {
-    var section: OpeningHistorySection
-    var bottleName: (OpeningEvent) -> String?
-    var onDelete: (OpeningEvent) -> Void
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text(section.title)
-                .font(.headline.weight(.semibold))
-                .foregroundStyle(TLTheme.green)
-                .padding(.horizontal, 4)
-
-            LazyVStack(spacing: 12) {
-                ForEach(section.events) { event in
-                    OpeningRow(
-                        event: event,
-                        bottleName: bottleName(event),
-                        style: .card,
-                        onDelete: {
-                            onDelete(event)
-                        }
-                    )
-                }
-            }
-        }
     }
 }
 
