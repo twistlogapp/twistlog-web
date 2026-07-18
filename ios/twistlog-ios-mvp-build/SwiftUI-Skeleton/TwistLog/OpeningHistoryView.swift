@@ -203,12 +203,15 @@ struct OpeningRow: View {
                         .font(.headline)
                 }
 
-                Text("Bottle opened")
-                    .font(.subheadline)
-
-                Text("\(event.openedAt.formatted(date: .abbreviated, time: .shortened)) · \(event.source.displayName)")
+                Text(event.openedAt.formatted(date: .abbreviated, time: .shortened))
                     .font(.caption)
                     .foregroundStyle(TLTheme.gray)
+
+                if event.source != .manual {
+                    Text(event.source.displayName)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(TLTheme.green)
+                }
             }
         }
         .padding(.vertical, 4)
@@ -227,17 +230,15 @@ struct OpeningRow: View {
                     .lineLimit(1)
                     .minimumScaleFactor(0.85)
 
-                Text("Bottle opened")
-                    .font(.subheadline)
-                    .foregroundStyle(TLTheme.text)
-
-                Text(event.source.displayName)
-                    .font(.caption.weight(.semibold))
-                    .padding(.horizontal, 9)
-                    .padding(.vertical, 4)
-                    .foregroundStyle(TLTheme.green)
-                    .background(TLTheme.green.opacity(0.12))
-                    .clipShape(Capsule())
+                if event.source != .manual {
+                    Text(event.source.displayName)
+                        .font(.caption.weight(.semibold))
+                        .padding(.horizontal, 9)
+                        .padding(.vertical, 4)
+                        .foregroundStyle(TLTheme.green)
+                        .background(TLTheme.green.opacity(0.12))
+                        .clipShape(Capsule())
+                }
             }
 
             Spacer(minLength: 12)
