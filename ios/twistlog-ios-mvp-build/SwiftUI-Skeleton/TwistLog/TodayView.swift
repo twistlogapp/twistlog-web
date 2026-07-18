@@ -200,11 +200,11 @@ private struct AllDoneBanner: View {
                 .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 4) {
-                Text("All bottles opened today.")
+                Text("Great job - all bottles opened today.")
                     .font(.headline)
                     .foregroundStyle(TLTheme.text)
 
-                Text("Great job. Your opening history is up to date.")
+                Text("Your opening history is up to date.")
                     .font(.subheadline)
                     .foregroundStyle(TLTheme.gray)
                     .fixedSize(horizontal: false, vertical: true)

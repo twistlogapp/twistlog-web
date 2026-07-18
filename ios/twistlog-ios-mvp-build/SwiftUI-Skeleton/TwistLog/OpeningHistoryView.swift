@@ -65,7 +65,7 @@ struct OpeningHistoryView: View {
                     eventPendingDeletion = nil
                 }
             } message: {
-                Text("This removes the selected opening from History and updates Today if it was the latest opening.")
+                Text("This removes this opening from History and may update Today.")
             }
         }
     }
