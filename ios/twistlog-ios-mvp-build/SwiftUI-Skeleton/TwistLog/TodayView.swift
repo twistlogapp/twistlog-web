@@ -685,31 +685,48 @@ struct OpeningRingAction: View {
 struct OpeningRingMark: View {
     var color: Color
 
+    private let trimStart: Double = 0.08
+    private let trimEnd: Double = 0.92
+    private let rotationDegrees: Double = 18
+    private let ringDiameter: CGFloat = 52
+    private let strokeWidth: CGFloat = 5
+    private let dotDiameter: CGFloat = 12
+
     var body: some View {
-        ZStack(alignment: .topTrailing) {
+        ZStack {
             Circle()
-                .trim(from: 0.08, to: 0.92)
+                .trim(from: trimStart, to: trimEnd)
                 .stroke(
                     color,
-                    style: StrokeStyle(lineWidth: 5, lineCap: .round)
+                    style: StrokeStyle(lineWidth: strokeWidth, lineCap: .round)
                 )
-                .rotationEffect(.degrees(18))
-                .frame(width: 52, height: 52)
+                .rotationEffect(.degrees(rotationDegrees))
+                .frame(width: ringDiameter, height: ringDiameter)
 
             Circle()
                 .fill(TLTheme.orange)
-                .frame(width: 11, height: 11)
+                .frame(width: dotDiameter, height: dotDiameter)
                 .overlay {
                     Circle()
-                        .stroke(TLTheme.cardBackground, lineWidth: 2)
+                        .stroke(TLTheme.cardBackground, lineWidth: 2.25)
                 }
-                .offset(x: -5, y: 4)
+                .offset(dotOffset)
         }
         .frame(width: 58, height: 58)
         .padding(6)
         .background(TLTheme.cardBackground)
         .clipShape(Circle())
         .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 4)
+    }
+
+    private var dotOffset: CGSize {
+        let angle = (trimEnd * 360 + rotationDegrees) * .pi / 180
+        let radius = ringDiameter / 2
+
+        return CGSize(
+            width: cos(angle) * radius,
+            height: sin(angle) * radius
+        )
     }
 }
 
