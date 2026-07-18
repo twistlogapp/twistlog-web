@@ -7,7 +7,6 @@ struct TodayView: View {
     @State private var showingAddBottle = false
     @State private var showingMultiRecord = false
     @State private var currentDate = Date()
-    @State private var searchText = ""
 
     private let clock = Timer.publish(every: 60, on: .main, in: .common).autoconnect()
 
@@ -21,30 +20,9 @@ struct TodayView: View {
                         TodayEmptyPrompt {
                             showingAddBottle = true
                         }
-                    } else if filteredBottles.isEmpty {
-                        EmptyStateView(
-                            systemImage: "magnifyingglass",
-                            title: "No bottles found",
-                            message: "Try another bottle name, medication, or note.",
-                            buttonTitle: nil,
-                            action: nil
-                        )
                     } else {
                         if allBottlesOpenedToday {
                             AllDoneBanner()
-                        }
-
-                        if store.activeBottles.count > 1 {
-                            Button {
-                                showingMultiRecord = true
-                            } label: {
-                                Label("Record multiple", systemImage: "checklist")
-                                    .font(.headline)
-                                    .frame(maxWidth: .infinity)
-                            }
-                            .buttonStyle(.bordered)
-                            .tint(TLTheme.green)
-                            .controlSize(.large)
                         }
 
                         ForEach(groupedSections) { section in
@@ -60,7 +38,6 @@ struct TodayView: View {
             .background(TLTheme.lightGray)
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
-            .searchable(text: $searchText, prompt: "Search bottles")
             .onAppear {
                 currentDate = Date()
             }
@@ -68,12 +45,23 @@ struct TodayView: View {
                 currentDate = now
             }
             .toolbar {
-                Button {
-                    showingAddBottle = true
-                } label: {
-                    Image(systemName: "plus")
+                ToolbarItemGroup(placement: .topBarTrailing) {
+                    if store.activeBottles.count > 1 {
+                        Button {
+                            showingMultiRecord = true
+                        } label: {
+                            Image(systemName: "checklist")
+                        }
+                        .accessibilityLabel("Record multiple openings")
+                    }
+
+                    Button {
+                        showingAddBottle = true
+                    } label: {
+                        Image(systemName: "plus")
+                    }
+                    .accessibilityLabel("Add bottle")
                 }
-                .accessibilityLabel("Add bottle")
             }
             .sheet(isPresented: $showingAddBottle) {
                 AddBottleView()
@@ -93,21 +81,9 @@ struct TodayView: View {
         }
     }
 
-    private var filteredBottles: [Bottle] {
-        let trimmedSearch = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmedSearch.isEmpty else { return store.activeBottles }
-
-        return store.activeBottles.filter { bottle in
-            bottle.nickname.localizedCaseInsensitiveContains(trimmedSearch)
-            || (bottle.medicationName?.localizedCaseInsensitiveContains(trimmedSearch) ?? false)
-            || (bottle.notes?.localizedCaseInsensitiveContains(trimmedSearch) ?? false)
-            || bottle.category.title.localizedCaseInsensitiveContains(trimmedSearch)
-        }
-    }
-
     private var groupedSections: [BottleCategoryGroup] {
         BottleCategory.allCases.compactMap { category in
-            let bottles = filteredBottles
+            let bottles = store.activeBottles
                 .filter { $0.category == category }
                 .sorted { lhs, rhs in
                     nextReminderDate(for: lhs) < nextReminderDate(for: rhs)
@@ -311,7 +287,7 @@ struct BottleCard: View {
                 StatusPill(status: todayStatus)
             }
 
-            if !bottle.enabledReminders.isEmpty || hasAnyOpening {
+            if bottle.enabledReminders.isEmpty, hasAnyOpening {
                 Label(compactDetailText, systemImage: compactDetailIcon)
                     .font(.subheadline)
                     .foregroundStyle(TLTheme.gray)
@@ -463,10 +439,6 @@ struct BottleCard: View {
     }
 
     private var compactDetailText: String {
-        if let reminder = reminderStatusDate {
-            return "Reminder \(reminder.formatted(date: .omitted, time: .shortened))"
-        }
-
         guard let last = store.lastOpening(for: bottle) else {
             return "No openings recorded"
         }
@@ -483,7 +455,7 @@ struct BottleCard: View {
     }
 
     private var compactDetailIcon: String {
-        reminderStatusDate == nil && hasAnyOpening ? "clock" : "bell"
+        hasAnyOpening ? "clock" : "bell"
     }
 
     private var recentWarningMessage: String {
@@ -760,55 +732,69 @@ struct MultiRecordOpeningView: View {
     var body: some View {
         NavigationStack {
             List {
-                Section {
-                    ForEach(store.activeBottles) { bottle in
-                        Button {
-                            toggleSelection(for: bottle)
-                        } label: {
-                            HStack(spacing: 12) {
-                                Image(systemName: selectedBottleIds.contains(bottle.id) ? "checkmark.circle.fill" : "circle")
-                                    .foregroundStyle(selectedBottleIds.contains(bottle.id) ? TLTheme.green : TLTheme.gray)
-                                    .accessibilityHidden(true)
+                if showSuccess {
+                    Section {
+                        VStack(alignment: .leading, spacing: 14) {
+                            Label("\(recordedEvents.count) \(recordedEvents.count == 1 ? "opening" : "openings") recorded.", systemImage: "checkmark.circle.fill")
+                                .font(.headline)
+                                .foregroundStyle(TLTheme.green)
 
-                                VStack(alignment: .leading, spacing: 3) {
-                                    Text(bottle.nickname)
-                                        .font(.headline)
-                                        .foregroundStyle(TLTheme.text)
+                            Text("Your opening history was updated for the selected bottles.")
+                                .font(.subheadline)
+                                .foregroundStyle(TLTheme.gray)
 
-                                    if let medicationName = bottle.medicationName {
-                                        Text(medicationName)
-                                            .font(.subheadline)
+                            HStack {
+                                Button("Undo") {
+                                    undoRecordedEvents()
+                                }
+                                .buttonStyle(.bordered)
+                                .tint(TLTheme.green)
+
+                                Spacer()
+
+                                Button("Done") {
+                                    dismiss()
+                                }
+                                .buttonStyle(.borderedProminent)
+                                .tint(TLTheme.green)
+                            }
+                        }
+                    }
+                } else {
+                    Section {
+                        ForEach(store.activeBottles) { bottle in
+                            Button {
+                                toggleSelection(for: bottle)
+                            } label: {
+                                HStack(spacing: 12) {
+                                    Image(systemName: selectedBottleIds.contains(bottle.id) ? "checkmark.circle.fill" : "circle")
+                                        .foregroundStyle(selectedBottleIds.contains(bottle.id) ? TLTheme.green : TLTheme.gray)
+                                        .accessibilityHidden(true)
+
+                                    VStack(alignment: .leading, spacing: 3) {
+                                        Text(bottle.nickname)
+                                            .font(.headline)
+                                            .foregroundStyle(TLTheme.text)
+
+                                        if let medicationName = bottle.medicationName {
+                                            Text(medicationName)
+                                                .font(.subheadline)
+                                                .foregroundStyle(TLTheme.gray)
+                                        }
+
+                                        Text(multiRecordSubtitle(for: bottle))
+                                            .font(.caption)
                                             .foregroundStyle(TLTheme.gray)
                                     }
 
-                                    Text(multiRecordSubtitle(for: bottle))
-                                        .font(.caption)
-                                        .foregroundStyle(TLTheme.gray)
+                                    Spacer()
                                 }
-
-                                Spacer()
+                                .contentShape(Rectangle())
                             }
-                            .contentShape(Rectangle())
+                            .buttonStyle(.plain)
                         }
-                        .buttonStyle(.plain)
-                    }
-                } footer: {
-                    Text("Select the bottles you opened together. TwistLog records opening events based on your input; it does not confirm medication was taken.")
-                }
-
-                if showSuccess {
-                    Section {
-                        HStack {
-                            Label("\(recordedEvents.count) \(recordedEvents.count == 1 ? "opening" : "openings") recorded.", systemImage: "checkmark.circle.fill")
-                                .foregroundStyle(TLTheme.green)
-
-                            Spacer()
-
-                            Button("Undo") {
-                                undoRecordedEvents()
-                            }
-                            .font(.subheadline.weight(.semibold))
-                        }
+                    } footer: {
+                        Text("Select the bottles you opened together. TwistLog records opening events based on your input; it does not confirm medication was taken.")
                     }
                 }
             }
@@ -825,7 +811,7 @@ struct MultiRecordOpeningView: View {
                     Button("Record") {
                         recordSelected()
                     }
-                    .disabled(selectedBottleIds.isEmpty)
+                    .disabled(selectedBottleIds.isEmpty || showSuccess)
                 }
             }
             .onAppear {
@@ -865,7 +851,7 @@ struct MultiRecordOpeningView: View {
 
     private func multiRecordSubtitle(for bottle: Bottle) -> String {
         if store.hasOpeningForMedicationDay(containing: currentDate, for: bottle) {
-            return "Already opened for this medication day"
+            return "Opened for today"
         }
 
         let reminders = bottle.enabledReminders.map(\.displayTime)

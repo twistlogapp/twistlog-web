@@ -42,11 +42,7 @@ struct SettingsView: View {
 
                 Section("Support") {
                     Link(destination: feedbackURL) {
-                        Label("Send feedback", systemImage: "envelope")
-                    }
-
-                    Link(destination: featureSuggestionURL) {
-                        Label("Suggest a feature", systemImage: "lightbulb")
+                        Label("Send feedback or idea", systemImage: "envelope")
                     }
 
                     Text("Your notes go directly to the founder. Please do not include urgent medical information.")
@@ -109,22 +105,7 @@ struct SettingsView: View {
             body: """
             Hi TwistLog team,
 
-
-            ---
-            App: TwistLog
-            Version: \(appVersion)
-            """
-        )
-    }
-
-    private var featureSuggestionURL: URL {
-        mailtoURL(
-            subject: "TwistLog Feature Suggestion",
-            body: """
-            Hi TwistLog team,
-
-            I have a feature idea:
-
+            Feedback or idea:
 
             ---
             App: TwistLog

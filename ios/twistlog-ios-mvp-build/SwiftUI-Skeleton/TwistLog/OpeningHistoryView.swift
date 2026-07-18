@@ -258,25 +258,20 @@ struct OpeningRow: View {
                     .foregroundStyle(TLTheme.gray)
             }
 
-            if let onDelete {
-                Button(role: .destructive) {
-                    onDelete()
-                } label: {
-                    Image(systemName: "trash")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.red)
-                        .padding(8)
-                        .background(Color.red.opacity(0.1))
-                        .clipShape(Circle())
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel("Delete opening for \(bottleName ?? "bottle")")
-            }
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(TLTheme.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+            if let onDelete {
+                Button(role: .destructive) {
+                    onDelete()
+                } label: {
+                    Label("Delete", systemImage: "trash")
+                }
+            }
+        }
         .contextMenu {
             if let onDelete {
                 Button(role: .destructive) {
