@@ -2,6 +2,7 @@ import SwiftUI
 
 struct OpeningHistoryView: View {
     @EnvironmentObject private var store: AppStore
+    @State private var eventPendingDeletion: OpeningEvent?
 
     var body: some View {
         NavigationStack {
@@ -17,6 +18,9 @@ struct OpeningHistoryView: View {
                                 section: section,
                                 bottleName: { event in
                                     bottleName(for: event)
+                                },
+                                onDelete: { event in
+                                    eventPendingDeletion = event
                                 }
                             )
                         }
@@ -27,7 +31,32 @@ struct OpeningHistoryView: View {
             .background(TLTheme.lightGray)
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
+            .alert("Delete opening record?", isPresented: deleteAlertBinding) {
+                Button("Cancel", role: .cancel) {
+                    eventPendingDeletion = nil
+                }
+
+                Button("Delete", role: .destructive) {
+                    if let eventPendingDeletion {
+                        store.deleteOpening(eventPendingDeletion)
+                    }
+                    eventPendingDeletion = nil
+                }
+            } message: {
+                Text("This removes the selected opening from History and updates Today if it was the latest opening.")
+            }
         }
+    }
+
+    private var deleteAlertBinding: Binding<Bool> {
+        Binding(
+            get: { eventPendingDeletion != nil },
+            set: { isPresented in
+                if !isPresented {
+                    eventPendingDeletion = nil
+                }
+            }
+        )
     }
 
     private var sortedEvents: [OpeningEvent] {
@@ -123,6 +152,7 @@ private struct HistoryEmptyPrompt: View {
 private struct OpeningHistorySectionView: View {
     var section: OpeningHistorySection
     var bottleName: (OpeningEvent) -> String?
+    var onDelete: (OpeningEvent) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -136,7 +166,10 @@ private struct OpeningHistorySectionView: View {
                     OpeningRow(
                         event: event,
                         bottleName: bottleName(event),
-                        style: .card
+                        style: .card,
+                        onDelete: {
+                            onDelete(event)
+                        }
                     )
                 }
             }
@@ -153,6 +186,7 @@ struct OpeningRow: View {
     var event: OpeningEvent
     var bottleName: String?
     var style: OpeningRowStyle = .compact
+    var onDelete: (() -> Void)?
 
     var body: some View {
         switch style {
@@ -223,11 +257,34 @@ struct OpeningRow: View {
                     .font(.caption)
                     .foregroundStyle(TLTheme.gray)
             }
+
+            if let onDelete {
+                Button(role: .destructive) {
+                    onDelete()
+                } label: {
+                    Image(systemName: "trash")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.red)
+                        .padding(8)
+                        .background(Color.red.opacity(0.1))
+                        .clipShape(Circle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Delete opening for \(bottleName ?? "bottle")")
+            }
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(TLTheme.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .accessibilityElement(children: .combine)
+        .contextMenu {
+            if let onDelete {
+                Button(role: .destructive) {
+                    onDelete()
+                } label: {
+                    Label("Delete opening", systemImage: "trash")
+                }
+            }
+        }
     }
 }

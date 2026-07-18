@@ -15,6 +15,7 @@ struct BottleDetailView: View {
     @State private var pendingOpeningDate: Date?
     @State private var lateOpeningRequest: LateOpeningRequest?
     @State private var lastRecordedEvent: OpeningEvent?
+    @State private var didLongPressOpenedNow = false
 
     var body: some View {
         Group {
@@ -36,12 +37,24 @@ struct BottleDetailView: View {
                                 .foregroundStyle(TLTheme.gray)
                         } else {
                             Button {
-                                showRecordOptions = true
+                                if didLongPressOpenedNow {
+                                    didLongPressOpenedNow = false
+                                } else {
+                                    showRecordOptions = true
+                                }
                             } label: {
                                 Label("Opened now", systemImage: "plus.circle.fill")
                             }
                             .tint(TLTheme.green)
                             .accessibilityLabel("Record opening for \(bottle.nickname)")
+                            .accessibilityHint("Tap for logging options. Long press to record just now.")
+                            .simultaneousGesture(
+                                LongPressGesture(minimumDuration: 0.5)
+                                    .onEnded { _ in
+                                        didLongPressOpenedNow = true
+                                        requestOpening(for: bottle, at: Date())
+                                    }
+                            )
                         }
 
                         if showSuccess {

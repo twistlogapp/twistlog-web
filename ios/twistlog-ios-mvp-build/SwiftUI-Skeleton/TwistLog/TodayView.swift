@@ -5,6 +5,7 @@ import Combine
 struct TodayView: View {
     @EnvironmentObject private var store: AppStore
     @State private var showingAddBottle = false
+    @State private var showingMultiRecord = false
     @State private var currentDate = Date()
     @State private var searchText = ""
 
@@ -31,6 +32,19 @@ struct TodayView: View {
                     } else {
                         if allBottlesOpenedToday {
                             AllDoneBanner()
+                        }
+
+                        if store.activeBottles.count > 1 {
+                            Button {
+                                showingMultiRecord = true
+                            } label: {
+                                Label("Record multiple", systemImage: "checklist")
+                                    .font(.headline)
+                                    .frame(maxWidth: .infinity)
+                            }
+                            .buttonStyle(.bordered)
+                            .tint(TLTheme.green)
+                            .controlSize(.large)
                         }
 
                         ForEach(groupedSections) { section in
@@ -63,6 +77,9 @@ struct TodayView: View {
             }
             .sheet(isPresented: $showingAddBottle) {
                 AddBottleView()
+            }
+            .sheet(isPresented: $showingMultiRecord) {
+                MultiRecordOpeningView(currentDate: currentDate)
             }
         }
     }
@@ -272,6 +289,7 @@ struct BottleCard: View {
     @State private var pendingOpeningDate: Date?
     @State private var lateOpeningRequest: LateOpeningRequest?
     @State private var lastRecordedEvent: OpeningEvent?
+    @State private var didLongPressOpenedNow = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -290,24 +308,15 @@ struct BottleCard: View {
 
                 Spacer()
 
-                StatusPill(
-                    text: statusText,
-                    foregroundColor: statusForegroundColor,
-                    backgroundColor: statusBackgroundColor
-                )
+                StatusPill(status: todayStatus)
             }
 
-            HStack(spacing: 8) {
-                Circle()
-                    .fill(hasAnyOpening ? TLTheme.orange : TLTheme.categoryGray.opacity(0.5))
-                    .frame(width: 9, height: 9)
-                    .accessibilityHidden(true)
-                Text(lastOpeningText)
+            if !bottle.enabledReminders.isEmpty || hasAnyOpening {
+                Label(compactDetailText, systemImage: compactDetailIcon)
                     .font(.subheadline)
                     .foregroundStyle(TLTheme.gray)
+                    .accessibilityElement(children: .combine)
             }
-            .accessibilityElement(children: .combine)
-            .accessibilityLabel(lastOpeningText)
 
             if !bottle.enabledReminders.isEmpty {
                 Label(reminderSummary, systemImage: "bell")
@@ -340,7 +349,7 @@ struct BottleCard: View {
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .overlay(alignment: .leading) {
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(bottle.category.accentColor)
+                .fill(todayStatus.accentColor)
                 .frame(width: 5)
         }
         .alert("Recent opening found.", isPresented: $showRecentWarning) {
@@ -396,7 +405,11 @@ struct BottleCard: View {
 
     private var openedNowButton: some View {
         Button {
-            showRecordOptions = true
+            if didLongPressOpenedNow {
+                didLongPressOpenedNow = false
+            } else {
+                showRecordOptions = true
+            }
         } label: {
             Text("Opened now")
                 .lineLimit(1)
@@ -406,6 +419,14 @@ struct BottleCard: View {
         .buttonStyle(.borderedProminent)
         .tint(TLTheme.green)
         .accessibilityLabel("Record opening for \(bottle.nickname)")
+        .accessibilityHint("Tap for logging options. Long press to record just now.")
+        .simultaneousGesture(
+            LongPressGesture(minimumDuration: 0.5)
+                .onEnded { _ in
+                    didLongPressOpenedNow = true
+                    requestOpening(at: Date())
+                }
+        )
     }
 
     private var detailsLink: some View {
@@ -441,11 +462,28 @@ struct BottleCard: View {
         }
     }
 
-    private var lastOpeningText: String {
-        guard let last = store.lastOpening(for: bottle) else {
-            return "No opening yet"
+    private var compactDetailText: String {
+        if let reminder = reminderStatusDate {
+            return "Reminder \(reminder.formatted(date: .omitted, time: .shortened))"
         }
-        return "Last opening: \(last.openedAt.formatted(date: .abbreviated, time: .shortened))"
+
+        guard let last = store.lastOpening(for: bottle) else {
+            return "No openings recorded"
+        }
+
+        if Calendar.current.isDateInToday(last.openedAt) {
+            return "Last opened \(last.openedAt.formatted(date: .omitted, time: .shortened))"
+        }
+
+        if Calendar.current.isDateInYesterday(last.openedAt) {
+            return "Last opened yesterday"
+        }
+
+        return "Last opened \(last.openedAt.formatted(date: .abbreviated, time: .omitted))"
+    }
+
+    private var compactDetailIcon: String {
+        reminderStatusDate == nil && hasAnyOpening ? "clock" : "bell"
     }
 
     private var recentWarningMessage: String {
@@ -455,16 +493,74 @@ struct BottleCard: View {
         return "This bottle was already opened at \(last.openedAt.formatted(date: .omitted, time: .shortened))."
     }
 
-    private var statusText: String {
-        guard let last = store.lastOpening(for: bottle) else {
-            return "Not opened yet"
+    private var todayStatus: TodayBottleStatus {
+        if let openedToday = store.openingForMedicationDay(containing: currentDate, for: bottle) {
+            return .opened(time: openedToday.openedAt.formatted(date: .omitted, time: .shortened))
         }
 
-        if store.hasOpeningForMedicationDay(containing: currentDate, for: bottle) {
-            return "Opened today"
+        if let reminder = reminderStatusDate {
+            let formattedTime = reminder.formatted(date: .omitted, time: .shortened)
+            if reminder <= currentDate {
+                return .due(time: formattedTime)
+            }
+            return .upcoming(time: formattedTime)
         }
 
-        return "Not opened today"
+        if let last = store.lastOpening(for: bottle) {
+            if Calendar.current.isDateInYesterday(last.openedAt) {
+                return .yesterday(time: last.openedAt.formatted(date: .omitted, time: .shortened))
+            }
+
+            return .lastOpened(date: last.openedAt.formatted(date: .abbreviated, time: .omitted))
+        }
+
+        return .notOpened
+    }
+
+    private var reminderStatusDate: Date? {
+        let reminders = bottle.enabledReminders
+        guard !reminders.isEmpty else { return nil }
+
+        let calendar = Calendar.current
+        let todayWeekday = calendar.component(.weekday, from: currentDate)
+        let todaysReminders = reminders
+            .filter { reminder in
+                reminder.days.contains(Weekday(rawValue: todayWeekday) ?? .sunday)
+            }
+            .compactMap { reminder in
+                calendar.date(
+                    bySettingHour: reminder.hour,
+                    minute: reminder.minute,
+                    second: 0,
+                    of: currentDate
+                )
+            }
+            .sorted()
+
+        if let latestPastDue = todaysReminders.last(where: { $0 <= currentDate }) {
+            return latestPastDue
+        }
+
+        if let nextToday = todaysReminders.first(where: { $0 > currentDate }) {
+            return nextToday
+        }
+
+        return reminders.compactMap { reminder in
+            reminder.days.compactMap { weekday -> Date? in
+                var components = DateComponents()
+                components.weekday = weekday.rawValue
+                components.hour = reminder.hour
+                components.minute = reminder.minute
+                return calendar.nextDate(
+                    after: currentDate,
+                    matching: components,
+                    matchingPolicy: .nextTime,
+                    direction: .forward
+                )
+            }
+            .min()
+        }
+        .min()
     }
 
     private var hasAnyOpening: Bool {
@@ -476,15 +572,7 @@ struct BottleCard: View {
     }
 
     private var cardBackground: Color {
-        hasOpenedToday ? TLTheme.cardBackground : TLTheme.cardBackground.opacity(0.78)
-    }
-
-    private var statusForegroundColor: Color {
-        hasOpenedToday ? TLTheme.green : TLTheme.categoryGray
-    }
-
-    private var statusBackgroundColor: Color {
-        hasOpenedToday ? TLTheme.green.opacity(0.12) : TLTheme.categoryGray.opacity(0.14)
+        hasOpenedToday ? TLTheme.cardBackground : TLTheme.cardBackground.opacity(0.9)
     }
 
     private var reminderSummary: String {
@@ -494,7 +582,7 @@ struct BottleCard: View {
         }
 
         if reminders.count == 1, let reminder = reminders.first {
-            return "Reminder: \(reminderDaySummary(reminder)) at \(reminder.displayTime)"
+            return "\(reminderDaySummary(reminder)) at \(reminder.displayTime)"
         }
 
         let times = reminders
@@ -503,10 +591,10 @@ struct BottleCard: View {
             .joined(separator: ", ")
 
         if reminders.count > 2 {
-            return "Reminders: \(times) + \(reminders.count - 2) more"
+            return "\(times) + \(reminders.count - 2) more"
         }
 
-        return "Reminders: \(times)"
+        return times
     }
 
     private func reminderDaySummary(_ reminder: BottleReminder) -> String {
@@ -596,18 +684,193 @@ struct EmptyStateView: View {
 }
 
 struct StatusPill: View {
-    var text: String
-    var foregroundColor: Color = TLTheme.green
-    var backgroundColor: Color = TLTheme.green.opacity(0.12)
+    var status: TodayBottleStatus
 
     var body: some View {
-        Text(text)
+        Text(status.text)
             .font(.caption.weight(.semibold))
             .padding(.horizontal, 10)
             .padding(.vertical, 6)
-            .foregroundStyle(foregroundColor)
-            .background(backgroundColor)
+            .foregroundStyle(status.foregroundColor)
+            .background(status.backgroundColor)
             .clipShape(Capsule())
+            .lineLimit(1)
+            .minimumScaleFactor(0.8)
+    }
+}
+
+enum TodayBottleStatus {
+    case opened(time: String)
+    case due(time: String)
+    case upcoming(time: String)
+    case yesterday(time: String)
+    case lastOpened(date: String)
+    case notOpened
+
+    var text: String {
+        switch self {
+        case let .opened(time): return "Opened \(time)"
+        case let .due(time): return "Due \(time)"
+        case let .upcoming(time): return "Upcoming \(time)"
+        case let .yesterday(time): return "Yesterday \(time)"
+        case let .lastOpened(date): return "Last \(date)"
+        case .notOpened: return "Not opened"
+        }
+    }
+
+    var foregroundColor: Color {
+        switch self {
+        case .opened: return TLTheme.green
+        case .due: return TLTheme.orange
+        case .upcoming, .yesterday, .lastOpened, .notOpened: return TLTheme.categoryGray
+        }
+    }
+
+    var backgroundColor: Color {
+        switch self {
+        case .opened: return TLTheme.green.opacity(0.12)
+        case .due: return TLTheme.orange.opacity(0.16)
+        case .upcoming, .yesterday, .lastOpened, .notOpened: return TLTheme.categoryGray.opacity(0.14)
+        }
+    }
+
+    var accentColor: Color {
+        switch self {
+        case .opened: return TLTheme.green
+        case .due: return TLTheme.orange
+        case .upcoming, .yesterday, .lastOpened, .notOpened: return TLTheme.categoryGray
+        }
+    }
+}
+
+struct MultiRecordOpeningView: View {
+    @EnvironmentObject private var store: AppStore
+    @Environment(\.dismiss) private var dismiss
+    @State private var selectedBottleIds: Set<UUID>
+    @State private var recordedEvents: [OpeningEvent] = []
+    @State private var showSuccess = false
+
+    var currentDate: Date
+
+    init(currentDate: Date) {
+        self.currentDate = currentDate
+        self._selectedBottleIds = State(initialValue: [])
+    }
+
+    var body: some View {
+        NavigationStack {
+            List {
+                Section {
+                    ForEach(store.activeBottles) { bottle in
+                        Button {
+                            toggleSelection(for: bottle)
+                        } label: {
+                            HStack(spacing: 12) {
+                                Image(systemName: selectedBottleIds.contains(bottle.id) ? "checkmark.circle.fill" : "circle")
+                                    .foregroundStyle(selectedBottleIds.contains(bottle.id) ? TLTheme.green : TLTheme.gray)
+                                    .accessibilityHidden(true)
+
+                                VStack(alignment: .leading, spacing: 3) {
+                                    Text(bottle.nickname)
+                                        .font(.headline)
+                                        .foregroundStyle(TLTheme.text)
+
+                                    if let medicationName = bottle.medicationName {
+                                        Text(medicationName)
+                                            .font(.subheadline)
+                                            .foregroundStyle(TLTheme.gray)
+                                    }
+
+                                    Text(multiRecordSubtitle(for: bottle))
+                                        .font(.caption)
+                                        .foregroundStyle(TLTheme.gray)
+                                }
+
+                                Spacer()
+                            }
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                    }
+                } footer: {
+                    Text("Select the bottles you opened together. TwistLog records opening events based on your input; it does not confirm medication was taken.")
+                }
+
+                if showSuccess {
+                    Section {
+                        HStack {
+                            Label("\(recordedEvents.count) \(recordedEvents.count == 1 ? "opening" : "openings") recorded.", systemImage: "checkmark.circle.fill")
+                                .foregroundStyle(TLTheme.green)
+
+                            Spacer()
+
+                            Button("Undo") {
+                                undoRecordedEvents()
+                            }
+                            .font(.subheadline.weight(.semibold))
+                        }
+                    }
+                }
+            }
+            .navigationTitle("Record multiple")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Record") {
+                        recordSelected()
+                    }
+                    .disabled(selectedBottleIds.isEmpty)
+                }
+            }
+            .onAppear {
+                if selectedBottleIds.isEmpty {
+                    selectedBottleIds = Set(
+                        store.activeBottles
+                            .filter { !store.hasOpeningForMedicationDay(containing: currentDate, for: $0) }
+                            .map(\.id)
+                    )
+                }
+            }
+        }
+    }
+
+    private func toggleSelection(for bottle: Bottle) {
+        if selectedBottleIds.contains(bottle.id) {
+            selectedBottleIds.remove(bottle.id)
+        } else {
+            selectedBottleIds.insert(bottle.id)
+        }
+    }
+
+    private func recordSelected() {
+        let selectedBottles = store.activeBottles.filter { selectedBottleIds.contains($0.id) }
+        recordedEvents = selectedBottles.map { store.recordOpening(for: $0, now: Date()) }
+        selectedBottleIds.removeAll()
+        showSuccess = true
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
+    }
+
+    private func undoRecordedEvents() {
+        recordedEvents.forEach { store.deleteOpening($0) }
+        recordedEvents.removeAll()
+        showSuccess = false
+        UINotificationFeedbackGenerator().notificationOccurred(.warning)
+    }
+
+    private func multiRecordSubtitle(for bottle: Bottle) -> String {
+        if store.hasOpeningForMedicationDay(containing: currentDate, for: bottle) {
+            return "Already opened for this medication day"
+        }
+
+        let reminders = bottle.enabledReminders.map(\.displayTime)
+        guard !reminders.isEmpty else { return "No reminder set" }
+        return reminders.joined(separator: ", ")
     }
 }
 

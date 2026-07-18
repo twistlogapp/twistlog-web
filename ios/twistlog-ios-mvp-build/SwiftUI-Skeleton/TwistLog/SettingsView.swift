@@ -40,6 +40,20 @@ struct SettingsView: View {
                         .foregroundStyle(TLTheme.gray)
                 }
 
+                Section("Support") {
+                    Link(destination: feedbackURL) {
+                        Label("Send feedback", systemImage: "envelope")
+                    }
+
+                    Link(destination: featureSuggestionURL) {
+                        Label("Suggest a feature", systemImage: "lightbulb")
+                    }
+
+                    Text("Your notes go directly to the founder. Please do not include urgent medical information.")
+                        .font(.footnote)
+                        .foregroundStyle(TLTheme.gray)
+                }
+
                 Section("About") {
                     NavigationLink {
                         ArchivedBottlesView()
@@ -87,6 +101,65 @@ struct SettingsView: View {
     private func openAppSettings() {
         guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
         UIApplication.shared.open(url)
+    }
+
+    private var feedbackURL: URL {
+        mailtoURL(
+            subject: "TwistLog Feedback",
+            body: """
+            Hi TwistLog team,
+
+
+            ---
+            App: TwistLog
+            Version: \(appVersion)
+            """
+        )
+    }
+
+    private var featureSuggestionURL: URL {
+        mailtoURL(
+            subject: "TwistLog Feature Suggestion",
+            body: """
+            Hi TwistLog team,
+
+            I have a feature idea:
+
+
+            ---
+            App: TwistLog
+            Version: \(appVersion)
+            """
+        )
+    }
+
+    private var appVersion: String {
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
+        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String
+        let cleanVersion = version?.isEmpty == false ? version : nil
+        let cleanBuild = build?.isEmpty == false ? build : nil
+
+        switch (cleanVersion, cleanBuild) {
+        case let (version?, build?):
+            return "\(version) (\(build))"
+        case let (version?, nil):
+            return version
+        case let (nil, build?):
+            return build
+        default:
+            return "1.0"
+        }
+    }
+
+    private func mailtoURL(subject: String, body: String) -> URL {
+        var components = URLComponents()
+        components.scheme = "mailto"
+        components.path = "hello@twistlog.com"
+        components.queryItems = [
+            URLQueryItem(name: "subject", value: subject),
+            URLQueryItem(name: "body", value: body)
+        ]
+        return components.url ?? URL(string: "mailto:hello@twistlog.com")!
     }
 }
 
