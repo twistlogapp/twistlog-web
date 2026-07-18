@@ -685,47 +685,62 @@ struct OpeningRingAction: View {
 struct OpeningRingMark: View {
     var color: Color
 
-    private let trimStart: Double = 0.08
-    private let trimEnd: Double = 0.92
-    private let rotationDegrees: Double = 18
-    private let ringDiameter: CGFloat = 52
+    private let startAngle: Double = 42
+    private let endAngle: Double = 330
+    private let markDiameter: CGFloat = 58
     private let strokeWidth: CGFloat = 5
     private let dotDiameter: CGFloat = 12
 
     var body: some View {
-        ZStack {
-            Circle()
-                .trim(from: trimStart, to: trimEnd)
-                .stroke(
-                    color,
-                    style: StrokeStyle(lineWidth: strokeWidth, lineCap: .round)
-                )
-                .rotationEffect(.degrees(rotationDegrees))
-                .frame(width: ringDiameter, height: ringDiameter)
+        Canvas { context, size in
+            let center = CGPoint(x: size.width / 2, y: size.height / 2)
+            let radius = min(size.width, size.height) / 2 - strokeWidth / 2
+            let start = Angle.degrees(startAngle)
+            let end = Angle.degrees(endAngle)
 
-            Circle()
-                .fill(TLTheme.orange)
-                .frame(width: dotDiameter, height: dotDiameter)
-                .overlay {
-                    Circle()
-                        .stroke(TLTheme.cardBackground, lineWidth: 2.25)
-                }
-                .offset(dotOffset)
+            var arc = Path()
+            arc.addArc(
+                center: center,
+                radius: radius,
+                startAngle: start,
+                endAngle: end,
+                clockwise: true
+            )
+            context.stroke(
+                arc,
+                with: .color(color),
+                style: StrokeStyle(lineWidth: strokeWidth, lineCap: .round)
+            )
+
+            let dotCenter = point(on: center, radius: radius, angleDegrees: endAngle)
+            let outerDotRect = CGRect(
+                x: dotCenter.x - (dotDiameter + 4) / 2,
+                y: dotCenter.y - (dotDiameter + 4) / 2,
+                width: dotDiameter + 4,
+                height: dotDiameter + 4
+            )
+            let innerDotRect = CGRect(
+                x: dotCenter.x - dotDiameter / 2,
+                y: dotCenter.y - dotDiameter / 2,
+                width: dotDiameter,
+                height: dotDiameter
+            )
+
+            context.fill(Path(ellipseIn: outerDotRect), with: .color(TLTheme.cardBackground))
+            context.fill(Path(ellipseIn: innerDotRect), with: .color(TLTheme.orange))
         }
-        .frame(width: 58, height: 58)
+        .frame(width: markDiameter, height: markDiameter)
         .padding(6)
         .background(TLTheme.cardBackground)
         .clipShape(Circle())
         .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 4)
     }
 
-    private var dotOffset: CGSize {
-        let angle = (trimEnd * 360 + rotationDegrees) * .pi / 180
-        let radius = ringDiameter / 2
-
-        return CGSize(
-            width: cos(angle) * radius,
-            height: sin(angle) * radius
+    private func point(on center: CGPoint, radius: CGFloat, angleDegrees: Double) -> CGPoint {
+        let radians = angleDegrees * .pi / 180
+        return CGPoint(
+            x: center.x + cos(radians) * radius,
+            y: center.y + sin(radians) * radius
         )
     }
 }
