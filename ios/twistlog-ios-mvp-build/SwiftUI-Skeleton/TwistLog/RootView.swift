@@ -318,7 +318,7 @@ private struct BottleManagementRow: View {
                         .minimumScaleFactor(0.8)
                 }
 
-                Label(reminderSummary, systemImage: "bell")
+                Label(reminderSummary, systemImage: reminderSummaryIcon)
                     .font(.subheadline)
                     .foregroundStyle(TLTheme.gray)
             }
@@ -338,7 +338,7 @@ private struct BottleManagementRow: View {
 
     private var reminderSummary: String {
         let reminders = bottle.enabledReminders
-        guard !reminders.isEmpty else { return "No reminders" }
+        guard !reminders.isEmpty else { return "No reminder set" }
 
         let times = reminders
             .prefix(2)
@@ -350,6 +350,10 @@ private struct BottleManagementRow: View {
         }
 
         return times
+    }
+
+    private var reminderSummaryIcon: String {
+        bottle.enabledReminders.isEmpty ? "bell.slash" : "bell"
     }
 
     private var contextSummary: String? {
