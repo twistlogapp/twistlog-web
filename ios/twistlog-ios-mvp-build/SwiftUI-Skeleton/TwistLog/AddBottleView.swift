@@ -36,12 +36,7 @@ struct AddBottleView: View {
             Form {
                 Section("Bottle") {
                     TextField("Bottle nickname", text: $nickname)
-                    Picker("Type", selection: $category) {
-                        ForEach(BottleCategory.allCases) { category in
-                            Text(category.pickerTitle).tag(category)
-                        }
-                    }
-                    .pickerStyle(.segmented)
+                    CategoryPicker(selection: $category)
                     TextField("Medication name (optional)", text: $medicationName)
                     TextField("Notes", text: $notes, axis: .vertical)
                         .lineLimit(3, reservesSpace: true)
@@ -58,7 +53,9 @@ struct AddBottleView: View {
                         }
 
                         Button {
-                            reminders.append(Self.defaultReminder(hour: nextReminderHour))
+                            var updatedReminders = reminders
+                            updatedReminders.append(Self.defaultReminder(hour: nextReminderHour))
+                            reminders = updatedReminders
                         } label: {
                             Label("Add reminder time", systemImage: "plus.circle")
                         }
@@ -199,14 +196,17 @@ struct AddBottleView: View {
     }
 
     private func removeReminder(_ id: UUID) {
-        reminders.removeAll { $0.id == id }
-        if reminders.isEmpty {
-            reminders.append(Self.defaultReminder())
+        var updatedReminders = reminders
+        updatedReminders.removeAll { $0.id == id }
+        if updatedReminders.isEmpty {
+            updatedReminders.append(Self.defaultReminder())
         }
+        reminders = updatedReminders
     }
 
     private static func defaultReminder(hour: Int = 8) -> BottleReminder {
         BottleReminder(
+            id: UUID(),
             isEnabled: true,
             hour: hour,
             minute: 0,
@@ -247,6 +247,55 @@ struct AddBottleView: View {
     private static func intervalValue(for minutes: Int) -> Int {
         let unit = intervalUnit(for: minutes)
         return max(1, minutes / unit.minuteMultiplier)
+    }
+}
+
+private struct CategoryPicker: View {
+    @Binding var selection: BottleCategory
+
+    private let columns = [
+        GridItem(.adaptive(minimum: 72), spacing: 8)
+    ]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Type")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(TLTheme.gray)
+
+            LazyVGrid(columns: columns, spacing: 8) {
+                ForEach(BottleCategory.allCases) { category in
+                    Button {
+                        selection = category
+                    } label: {
+                        HStack(spacing: 6) {
+                            Circle()
+                                .fill(selection == category ? TLTheme.selectedChipText : category.accentColor)
+                                .frame(width: 8, height: 8)
+                                .accessibilityHidden(true)
+
+                            Text(category.pickerTitle)
+                                .font(.subheadline.weight(.bold))
+                                .lineLimit(1)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 9)
+                        .foregroundStyle(selection == category ? TLTheme.selectedChipText : category.accentColor)
+                        .background(selection == category ? category.accentColor : category.accentColor.opacity(0.14))
+                        .clipShape(Capsule())
+                        .overlay {
+                            Capsule()
+                                .stroke(category.accentColor.opacity(selection == category ? 0 : 0.35), lineWidth: 1)
+                        }
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(category.title)
+                    .accessibilityAddTraits(selection == category ? .isSelected : [])
+                }
+            }
+        }
+        .padding(.vertical, 4)
     }
 }
 
@@ -356,6 +405,12 @@ private struct ReminderEditorView: View {
                 DatePicker("Reminder time", selection: $reminderTime, displayedComponents: .hourAndMinute)
                     .onChange(of: reminderTime) { newValue in
                         updateReminderTime(newValue)
+                    }
+                    .onChange(of: reminder.id) { _ in
+                        reminderTime = Self.reminderDate(
+                            hour: reminder.hour,
+                            minute: reminder.minute
+                        )
                     }
 
                 Button(role: .destructive) {
