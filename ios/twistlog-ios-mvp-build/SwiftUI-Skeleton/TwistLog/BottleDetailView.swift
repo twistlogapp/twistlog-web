@@ -30,6 +30,11 @@ struct BottleDetailView: View {
                                 Text(medicationName)
                                     .foregroundStyle(TLTheme.text)
                             }
+                            if let contextSummary = contextSummary(for: bottle) {
+                                Text(contextSummary)
+                                    .font(.subheadline.weight(.semibold))
+                                    .foregroundStyle(TLTheme.gray)
+                            }
                         }
                         .padding(.vertical, 6)
 
@@ -78,6 +83,21 @@ struct BottleDetailView: View {
 
                     Section("Bottle") {
                         LabeledContent("Type", value: bottle.category.title)
+                        if let medicationName = bottle.medicationName {
+                            LabeledContent("Name", value: medicationName)
+                        }
+                    }
+
+                    if bottle.amountText != nil || bottle.timingNote != nil {
+                        Section("Bottle context") {
+                            if let amountText = bottle.amountText {
+                                LabeledContent("Amount or label", value: amountText)
+                            }
+
+                            if let timingNote = bottle.timingNote {
+                                LabeledContent("Timing note", value: timingNote)
+                            }
+                        }
                     }
 
                     Section("Last opening") {
@@ -314,5 +334,14 @@ struct BottleDetailView: View {
             .filter { reminder.days.contains($0) }
             .map(\.shortName)
             .joined(separator: ", ")
+    }
+
+    private func contextSummary(for bottle: Bottle) -> String? {
+        let parts = [bottle.amountText, bottle.timingNote].compactMap { value -> String? in
+            guard let value else { return nil }
+            return value.nilIfBlank
+        }
+        guard !parts.isEmpty else { return nil }
+        return parts.joined(separator: " • ")
     }
 }

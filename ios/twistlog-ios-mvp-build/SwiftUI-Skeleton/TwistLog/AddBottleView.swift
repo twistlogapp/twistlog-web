@@ -9,6 +9,9 @@ struct AddBottleView: View {
     @State private var nickname: String
     @State private var category: BottleCategory
     @State private var medicationName: String
+    @State private var amountText: String
+    @State private var timingPreset: TimingNotePreset
+    @State private var customTimingNote: String
     @State private var notes: String
     @State private var minimumIntervalEnabled: Bool
     @State private var minimumIntervalMinutes: Int
@@ -22,6 +25,10 @@ struct AddBottleView: View {
         _nickname = State(initialValue: bottle?.nickname ?? "")
         _category = State(initialValue: bottle?.category ?? .prescription)
         _medicationName = State(initialValue: bottle?.medicationName ?? "")
+        _amountText = State(initialValue: bottle?.amountText ?? "")
+        let resolvedTiming = Self.resolvedTimingPreset(for: bottle?.timingNote)
+        _timingPreset = State(initialValue: resolvedTiming.preset)
+        _customTimingNote = State(initialValue: resolvedTiming.customText)
         _notes = State(initialValue: bottle?.notes ?? "")
         _minimumIntervalEnabled = State(initialValue: bottle?.minimumIntervalEnabled ?? false)
         _minimumIntervalMinutes = State(initialValue: bottle?.minimumIntervalMinutes ?? 240)
@@ -38,6 +45,27 @@ struct AddBottleView: View {
                     TextField("Bottle nickname", text: $nickname)
                     CategoryPicker(selection: $category)
                     TextField("Medication name (optional)", text: $medicationName)
+                }
+
+                Section {
+                    TextField("Amount or label", text: $amountText)
+
+                    Picker("Timing note", selection: $timingPreset) {
+                        ForEach(TimingNotePreset.allCases) { preset in
+                            Text(preset.title).tag(preset)
+                        }
+                    }
+
+                    if timingPreset == .custom {
+                        TextField("Custom timing note", text: $customTimingNote)
+                    }
+                } header: {
+                    Text("Bottle context")
+                } footer: {
+                    Text("Optional display-only details, like 40mg, 1 capsule, with food, or after school.")
+                }
+
+                Section("Notes") {
                     TextField("Notes", text: $notes, axis: .vertical)
                         .lineLimit(3, reservesSpace: true)
                 }
@@ -200,6 +228,8 @@ struct AddBottleView: View {
                 nickname: trimmedNickname,
                 category: category,
                 medicationName: medicationName,
+                amountText: amountText,
+                timingNote: normalizedTimingNote,
                 notes: notes,
                 minimumIntervalEnabled: minimumIntervalEnabled,
                 minimumIntervalMinutes: normalizedMinimumIntervalMinutes,
@@ -210,6 +240,8 @@ struct AddBottleView: View {
                 nickname: trimmedNickname,
                 category: category,
                 medicationName: medicationName,
+                amountText: amountText,
+                timingNote: normalizedTimingNote,
                 notes: notes,
                 minimumIntervalEnabled: minimumIntervalEnabled,
                 minimumIntervalMinutes: normalizedMinimumIntervalMinutes,
@@ -241,6 +273,17 @@ struct AddBottleView: View {
         minimumIntervalEnabled ? minimumIntervalMinutes : nil
     }
 
+    private var normalizedTimingNote: String? {
+        switch timingPreset {
+        case .none:
+            return nil
+        case .custom:
+            return customTimingNote.nilIfBlank
+        default:
+            return timingPreset.title
+        }
+    }
+
     private func setInterval(minutes: Int) {
         minimumIntervalMinutes = minutes
         minimumIntervalUnit = Self.intervalUnit(for: minutes)
@@ -270,6 +313,18 @@ struct AddBottleView: View {
     private static func intervalValue(for minutes: Int) -> Int {
         let unit = intervalUnit(for: minutes)
         return max(1, minutes / unit.minuteMultiplier)
+    }
+
+    private static func resolvedTimingPreset(for timingNote: String?) -> (preset: TimingNotePreset, customText: String) {
+        guard let timingNote = timingNote?.nilIfBlank else {
+            return (.none, "")
+        }
+
+        if let preset = TimingNotePreset.allCases.first(where: { $0.title == timingNote }) {
+            return (preset, "")
+        }
+
+        return (.custom, timingNote)
     }
 }
 
@@ -319,6 +374,30 @@ private struct CategoryPicker: View {
             }
         }
         .padding(.vertical, 4)
+    }
+}
+
+private enum TimingNotePreset: String, CaseIterable, Identifiable {
+    case none
+    case withFood
+    case beforeBreakfast
+    case afterBreakfast
+    case atBedtime
+    case afterSchool
+    case custom
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .none: return "None"
+        case .withFood: return "With food"
+        case .beforeBreakfast: return "Before breakfast"
+        case .afterBreakfast: return "After breakfast"
+        case .atBedtime: return "At bedtime"
+        case .afterSchool: return "After school"
+        case .custom: return "Custom"
+        }
     }
 }
 

@@ -379,6 +379,14 @@ struct BottleCard: View {
                         .lineLimit(1)
                         .minimumScaleFactor(0.85)
                 }
+
+                if let contextSummary {
+                    Text(contextSummary)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(TLTheme.gray)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                }
             }
 
             Label(reminderSummary, systemImage: reminderSummaryIcon)
@@ -556,6 +564,15 @@ struct BottleCard: View {
 
     private var reminderSummaryIcon: String {
         bottle.enabledReminders.isEmpty ? "bell.slash" : "bell"
+    }
+
+    private var contextSummary: String? {
+        let parts = [bottle.amountText, bottle.timingNote].compactMap { value -> String? in
+            guard let value else { return nil }
+            return value.nilIfBlank
+        }
+        guard !parts.isEmpty else { return nil }
+        return parts.joined(separator: " • ")
     }
 
     private func reminderDaySummary(_ reminder: BottleReminder) -> String {

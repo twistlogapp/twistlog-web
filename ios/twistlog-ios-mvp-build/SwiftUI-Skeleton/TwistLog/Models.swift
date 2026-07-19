@@ -5,6 +5,8 @@ struct Bottle: Identifiable, Hashable, Codable {
     var nickname: String
     var category: BottleCategory = .prescription
     var medicationName: String? = nil
+    var amountText: String? = nil
+    var timingNote: String? = nil
     var notes: String? = nil
     var createdAt = Date()
     var updatedAt = Date()
@@ -22,6 +24,8 @@ struct Bottle: Identifiable, Hashable, Codable {
         nickname: String,
         category: BottleCategory = .prescription,
         medicationName: String? = nil,
+        amountText: String? = nil,
+        timingNote: String? = nil,
         notes: String? = nil,
         createdAt: Date = Date(),
         updatedAt: Date = Date(),
@@ -38,6 +42,8 @@ struct Bottle: Identifiable, Hashable, Codable {
         self.nickname = nickname
         self.category = category
         self.medicationName = medicationName
+        self.amountText = amountText
+        self.timingNote = timingNote
         self.notes = notes
         self.createdAt = createdAt
         self.updatedAt = updatedAt
@@ -65,6 +71,8 @@ struct Bottle: Identifiable, Hashable, Codable {
         case nickname
         case category
         case medicationName
+        case amountText
+        case timingNote
         case notes
         case createdAt
         case updatedAt
@@ -85,6 +93,8 @@ struct Bottle: Identifiable, Hashable, Codable {
         nickname = try container.decode(String.self, forKey: .nickname)
         category = try container.decodeIfPresent(BottleCategory.self, forKey: .category) ?? .prescription
         medicationName = try container.decodeIfPresent(String.self, forKey: .medicationName)
+        amountText = try container.decodeIfPresent(String.self, forKey: .amountText)
+        timingNote = try container.decodeIfPresent(String.self, forKey: .timingNote)
         notes = try container.decodeIfPresent(String.self, forKey: .notes)
         createdAt = try container.decodeIfPresent(Date.self, forKey: .createdAt) ?? Date()
         updatedAt = try container.decodeIfPresent(Date.self, forKey: .updatedAt) ?? Date()
@@ -110,6 +120,8 @@ struct Bottle: Identifiable, Hashable, Codable {
         try container.encode(nickname, forKey: .nickname)
         try container.encode(category, forKey: .category)
         try container.encodeIfPresent(medicationName, forKey: .medicationName)
+        try container.encodeIfPresent(amountText, forKey: .amountText)
+        try container.encodeIfPresent(timingNote, forKey: .timingNote)
         try container.encodeIfPresent(notes, forKey: .notes)
         try container.encode(createdAt, forKey: .createdAt)
         try container.encode(updatedAt, forKey: .updatedAt)

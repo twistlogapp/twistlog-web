@@ -10,6 +10,8 @@ struct Bottle: Identifiable, Hashable {
     var nickname: String
     var category: BottleCategory
     var medicationName: String?
+    var amountText: String?
+    var timingNote: String?
     var notes: String?
     var createdAt: Date
     var updatedAt: Date
@@ -25,6 +27,8 @@ struct Bottle: Identifiable, Hashable {
 ```
 
 `category` groups Today into Prescription, Supplements, Water, and Other. Existing local bottles saved before this field existed decode as `prescription`; users can edit supplements, water bottles, or other bottles once to move them into the right section.
+
+`amountText` and `timingNote` are display-only bottle context fields. Examples include `40mg`, `1 capsule`, `2 gummies`, `16 oz bottle`, `Kids bottle`, `With food`, `Before breakfast`, `At bedtime`, or custom user text. These fields do not drive reminders, dosage logic, hydration claims, or medical advice.
 
 `reminderEnabled`, `reminderHour`, `reminderMinute`, and `reminderDays` remain for backward compatibility with early v1 builds. New UI and scheduling should use `reminders`.
 

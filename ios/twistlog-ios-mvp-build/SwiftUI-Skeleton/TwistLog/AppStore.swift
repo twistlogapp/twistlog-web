@@ -125,6 +125,8 @@ final class AppStore: ObservableObject {
         nickname: String,
         category: BottleCategory = .prescription,
         medicationName: String?,
+        amountText: String? = nil,
+        timingNote: String? = nil,
         notes: String?,
         minimumIntervalEnabled: Bool,
         minimumIntervalMinutes: Int?,
@@ -137,6 +139,8 @@ final class AppStore: ObservableObject {
             nickname: nickname,
             category: category,
             medicationName: medicationName,
+            amountText: amountText,
+            timingNote: timingNote,
             notes: notes,
             minimumIntervalEnabled: minimumIntervalEnabled,
             minimumIntervalMinutes: minimumIntervalMinutes,
@@ -153,6 +157,8 @@ final class AppStore: ObservableObject {
         nickname: String,
         category: BottleCategory = .prescription,
         medicationName: String?,
+        amountText: String? = nil,
+        timingNote: String? = nil,
         notes: String?,
         minimumIntervalEnabled: Bool,
         minimumIntervalMinutes: Int?,
@@ -162,6 +168,8 @@ final class AppStore: ObservableObject {
             nickname: nickname,
             category: category,
             medicationName: medicationName?.nilIfBlank,
+            amountText: amountText?.nilIfBlank,
+            timingNote: timingNote?.nilIfBlank,
             notes: notes?.nilIfBlank,
             minimumIntervalEnabled: minimumIntervalEnabled,
             minimumIntervalMinutes: minimumIntervalEnabled ? minimumIntervalMinutes : nil,
@@ -181,6 +189,8 @@ final class AppStore: ObservableObject {
         nickname: String,
         category: BottleCategory = .prescription,
         medicationName: String?,
+        amountText: String? = nil,
+        timingNote: String? = nil,
         notes: String?,
         minimumIntervalEnabled: Bool,
         minimumIntervalMinutes: Int?,
@@ -194,6 +204,8 @@ final class AppStore: ObservableObject {
             nickname: nickname,
             category: category,
             medicationName: medicationName,
+            amountText: amountText,
+            timingNote: timingNote,
             notes: notes,
             minimumIntervalEnabled: minimumIntervalEnabled,
             minimumIntervalMinutes: minimumIntervalMinutes,
@@ -211,6 +223,8 @@ final class AppStore: ObservableObject {
         nickname: String,
         category: BottleCategory = .prescription,
         medicationName: String?,
+        amountText: String? = nil,
+        timingNote: String? = nil,
         notes: String?,
         minimumIntervalEnabled: Bool,
         minimumIntervalMinutes: Int?,
@@ -222,6 +236,8 @@ final class AppStore: ObservableObject {
         updatedBottle.nickname = nickname
         updatedBottle.category = category
         updatedBottle.medicationName = medicationName?.nilIfBlank
+        updatedBottle.amountText = amountText?.nilIfBlank
+        updatedBottle.timingNote = timingNote?.nilIfBlank
         updatedBottle.notes = notes?.nilIfBlank
         updatedBottle.minimumIntervalEnabled = minimumIntervalEnabled
         updatedBottle.minimumIntervalMinutes = minimumIntervalEnabled ? minimumIntervalMinutes : nil
@@ -426,7 +442,7 @@ private struct PersistedAppState: Codable {
     }
 }
 
-private extension String {
+extension String {
     var nilIfBlank: String? {
         let trimmed = trimmingCharacters(in: .whitespacesAndNewlines)
         return trimmed.isEmpty ? nil : trimmed

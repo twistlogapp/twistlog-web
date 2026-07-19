@@ -140,6 +140,8 @@ struct BottlesView: View {
         return store.activeBottles.filter { bottle in
             bottle.nickname.localizedCaseInsensitiveContains(trimmedSearch)
             || (bottle.medicationName?.localizedCaseInsensitiveContains(trimmedSearch) ?? false)
+            || (bottle.amountText?.localizedCaseInsensitiveContains(trimmedSearch) ?? false)
+            || (bottle.timingNote?.localizedCaseInsensitiveContains(trimmedSearch) ?? false)
             || (bottle.notes?.localizedCaseInsensitiveContains(trimmedSearch) ?? false)
             || bottle.category.title.localizedCaseInsensitiveContains(trimmedSearch)
         }
@@ -204,6 +206,14 @@ private struct BottleManagementRow: View {
                         .foregroundStyle(TLTheme.gray)
                 }
 
+                if let contextSummary {
+                    Text(contextSummary)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(TLTheme.gray)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                }
+
                 Label(reminderSummary, systemImage: "bell")
                     .font(.subheadline)
                     .foregroundStyle(TLTheme.gray)
@@ -236,5 +246,14 @@ private struct BottleManagementRow: View {
         }
 
         return times
+    }
+
+    private var contextSummary: String? {
+        let parts = [bottle.amountText, bottle.timingNote].compactMap { value -> String? in
+            guard let value else { return nil }
+            return value.nilIfBlank
+        }
+        guard !parts.isEmpty else { return nil }
+        return parts.joined(separator: " • ")
     }
 }
