@@ -711,9 +711,7 @@ struct OpeningRingAction: View {
             return TLTheme.green
         case .due:
             return TLTheme.orange
-        case .soon:
-            return TLTheme.orange.opacity(0.72)
-        case .upcoming, .yesterday, .lastOpened, .notOpened:
+        case .soon, .upcoming, .yesterday, .lastOpened, .notOpened:
             return Color(uiColor: .systemGray3)
         }
     }
