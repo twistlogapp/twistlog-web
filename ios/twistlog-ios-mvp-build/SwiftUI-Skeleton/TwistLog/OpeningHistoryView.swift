@@ -198,6 +198,8 @@ private struct LastSevenDaysOpeningChart: View {
     var events: [OpeningEvent]
     var bottles: [Bottle]
 
+    @State private var selectedDate: Date?
+
     private var days: [DailyOpeningCount] {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
@@ -217,6 +219,22 @@ private struct LastSevenDaysOpeningChart: View {
 
     private var totalOpenings: Int {
         days.reduce(0) { $0 + $1.count }
+    }
+
+    private var selectedDay: DailyOpeningCount {
+        let calendar = Calendar.current
+        let selectedStart = selectedDate.map { calendar.startOfDay(for: $0) }
+
+        if let selectedStart,
+           let selected = days.first(where: { calendar.isDate($0.date, inSameDayAs: selectedStart) }) {
+            return selected
+        }
+
+        return days.last ?? DailyOpeningCount(date: calendar.startOfDay(for: Date()), count: 0)
+    }
+
+    private var selectedCategoryCounts: [CategoryOpeningCount] {
+        categoryCounts(for: selectedDay.date)
     }
 
     private var categoryCounts: [CategoryOpeningCount] {
@@ -261,27 +279,41 @@ private struct LastSevenDaysOpeningChart: View {
 
             HStack(alignment: .bottom, spacing: 10) {
                 ForEach(days) { day in
+                    let isSelected = Calendar.current.isDate(day.date, inSameDayAs: selectedDay.date)
+
                     VStack(spacing: 7) {
                         Text("\(day.count)")
                             .font(.caption.weight(.bold))
-                            .foregroundStyle(day.count > 0 ? TLTheme.text : TLTheme.gray)
+                            .foregroundStyle(isSelected ? TLTheme.orange : (day.count > 0 ? TLTheme.text : TLTheme.gray))
                             .monospacedDigit()
 
                         RoundedRectangle(cornerRadius: 6, style: .continuous)
-                            .fill(day.count > 0 ? TLTheme.orange : TLTheme.categoryGray.opacity(0.18))
+                            .fill(barColor(for: day, isSelected: isSelected))
                             .frame(height: barHeight(for: day.count))
                             .frame(maxWidth: .infinity)
+                            .overlay {
+                                if isSelected {
+                                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                        .stroke(TLTheme.orange.opacity(0.55), lineWidth: 2)
+                                }
+                            }
 
                         Text(day.weekdayLabel)
                             .font(.caption.weight(.semibold))
-                            .foregroundStyle(day.isToday ? TLTheme.orange : TLTheme.gray)
+                            .foregroundStyle(isSelected || day.isToday ? TLTheme.orange : TLTheme.gray)
                     }
                     .frame(maxWidth: .infinity)
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        selectedDate = day.date
+                    }
                     .accessibilityElement(children: .ignore)
-                    .accessibilityLabel("\(day.accessibilityDate), \(day.count) opening records")
+                    .accessibilityLabel("\(day.accessibilityDate), \(day.count) opening records\(isSelected ? ", selected" : "")")
                 }
             }
             .frame(height: 126, alignment: .bottom)
+
+            SelectedDayOpeningSummary(day: selectedDay, categoryCounts: selectedCategoryCounts)
 
             HStack(spacing: 6) {
                 ForEach(categoryCounts) { item in
@@ -300,6 +332,68 @@ private struct LastSevenDaysOpeningChart: View {
     private func barHeight(for count: Int) -> CGFloat {
         guard count > 0 else { return 8 }
         return 18 + CGFloat(count) / CGFloat(maxCount) * 54
+    }
+
+    private func barColor(for day: DailyOpeningCount, isSelected: Bool) -> Color {
+        if day.count == 0 {
+            return isSelected ? TLTheme.orange.opacity(0.2) : TLTheme.categoryGray.opacity(0.18)
+        }
+
+        return isSelected ? TLTheme.orange : TLTheme.orange.opacity(0.76)
+    }
+
+    private func categoryCounts(for date: Date) -> [CategoryOpeningCount] {
+        let calendar = Calendar.current
+        let bottleCategories = Dictionary(uniqueKeysWithValues: bottles.map { ($0.id, $0.category) })
+        let eventsForDay = events.filter { event in
+            calendar.isDate(event.openedAt, inSameDayAs: date)
+        }
+        let counts = Dictionary(grouping: eventsForDay) { event -> BottleCategory in
+            bottleCategories[event.bottleId] ?? .other
+        }
+
+        return BottleCategory.allCases.map { category in
+            CategoryOpeningCount(category: category, count: counts[category]?.count ?? 0)
+        }
+    }
+}
+
+private struct SelectedDayOpeningSummary: View {
+    var day: DailyOpeningCount
+    var categoryCounts: [CategoryOpeningCount]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .firstTextBaseline) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(day.summaryTitle)
+                        .font(.headline.weight(.bold))
+                        .foregroundStyle(TLTheme.text)
+
+                    Text(day.summaryDate)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(TLTheme.gray)
+                }
+
+                Spacer()
+
+                Text("\(day.count) \(day.count == 1 ? "opening" : "openings")")
+                    .font(.subheadline.weight(.bold))
+                    .foregroundStyle(TLTheme.orange)
+                    .monospacedDigit()
+            }
+
+            HStack(spacing: 6) {
+                ForEach(categoryCounts) { item in
+                    CategoryCountChip(item: item)
+                }
+            }
+        }
+        .padding(12)
+        .background(TLTheme.lightGray.opacity(0.72))
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(day.summaryTitle), \(day.count) opening records")
     }
 }
 
@@ -352,6 +446,24 @@ private struct DailyOpeningCount: Identifiable {
     }
 
     var accessibilityDate: String {
+        date.formatted(date: .abbreviated, time: .omitted)
+    }
+
+    var summaryTitle: String {
+        let calendar = Calendar.current
+
+        if calendar.isDateInToday(date) {
+            return "Today"
+        }
+
+        if calendar.isDateInYesterday(date) {
+            return "Yesterday"
+        }
+
+        return date.formatted(.dateTime.weekday(.wide))
+    }
+
+    var summaryDate: String {
         date.formatted(date: .abbreviated, time: .omitted)
     }
 }
