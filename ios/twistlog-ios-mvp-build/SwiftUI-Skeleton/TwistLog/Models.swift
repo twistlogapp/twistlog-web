@@ -161,9 +161,9 @@ enum BottleCategory: String, CaseIterable, Codable, Identifiable {
     var pickerTitle: String {
         switch self {
         case .prescription: return "Rx"
-        case .supplement: return "Supp"
+        case .supplement: return "Sup"
         case .water: return "H2O"
-        case .other: return "Other"
+        case .other: return "Oth"
         }
     }
 }

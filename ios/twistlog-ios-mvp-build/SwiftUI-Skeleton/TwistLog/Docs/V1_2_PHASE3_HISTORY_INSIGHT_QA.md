@@ -29,7 +29,7 @@ Phase 3 goal: show simple opening patterns without implying medication was taken
 - [ ] Days with openings show orange bars.
 - [ ] Bar count labels match the number of opening records for each day.
 - [ ] Category chips appear below the chart.
-- [ ] Category chips show Rx, Supp, H2O, and Other counts.
+- [ ] Category chips show Rx, Sup, H2O, and Oth counts.
 - [ ] Category chips use category colors.
 - [ ] Category chip counts match opening records from the last 7 days.
 

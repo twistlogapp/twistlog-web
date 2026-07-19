@@ -273,9 +273,7 @@ private struct LastSevenDaysOpeningChart: View {
             }
             .frame(height: 126, alignment: .bottom)
 
-            LazyVGrid(columns: [
-                GridItem(.adaptive(minimum: 74), spacing: 8)
-            ], alignment: .leading, spacing: 8) {
+            HStack(spacing: 6) {
                 ForEach(categoryCounts) { item in
                     CategoryCountChip(item: item)
                 }
@@ -319,7 +317,7 @@ private struct CategoryCountChip: View {
                 .font(.caption.weight(.bold))
                 .monospacedDigit()
         }
-        .padding(.horizontal, 9)
+        .padding(.horizontal, 7)
         .padding(.vertical, 6)
         .foregroundStyle(item.category.accentColor)
         .background(item.category.accentColor.opacity(0.12))
