@@ -321,7 +321,7 @@ struct BottleCard: View {
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .overlay(alignment: .leading) {
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(todayStatus.accentColor)
+                .fill(bottle.category.accentColor)
                 .frame(width: 5)
         }
         .alert("Recent opening found.", isPresented: $showRecentWarning) {
