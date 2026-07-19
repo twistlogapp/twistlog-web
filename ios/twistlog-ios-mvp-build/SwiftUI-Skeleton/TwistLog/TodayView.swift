@@ -537,7 +537,7 @@ struct BottleCard: View {
     private var reminderSummary: String {
         let reminders = bottle.enabledReminders
         guard !reminders.isEmpty else {
-            return "Reminder: off"
+            return "No reminder set"
         }
 
         if reminders.count == 1, let reminder = reminders.first {
