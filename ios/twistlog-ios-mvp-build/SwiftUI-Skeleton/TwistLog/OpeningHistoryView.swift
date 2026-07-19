@@ -39,7 +39,7 @@ struct OpeningHistoryView: View {
                             }
                         } header: {
                             Text(section.title)
-                                .font(.headline.weight(.semibold))
+                                .font(.title3.weight(.semibold))
                                 .foregroundStyle(TLTheme.green)
                                 .textCase(nil)
                                 .padding(.leading, 4)
@@ -200,16 +200,16 @@ struct OpeningRow: View {
             VStack(alignment: .leading, spacing: 3) {
                 if let bottleName {
                     Text(bottleName)
-                        .font(.headline)
+                        .font(.title3.weight(.bold))
                 }
 
                 Text(event.openedAt.formatted(date: .abbreviated, time: .shortened))
-                    .font(.caption)
+                    .font(.subheadline)
                     .foregroundStyle(TLTheme.gray)
 
                 if event.source != .manual {
                     Text(event.source.displayName)
-                        .font(.caption.weight(.semibold))
+                        .font(.subheadline.weight(.semibold))
                         .foregroundStyle(TLTheme.green)
                 }
             }
@@ -225,14 +225,14 @@ struct OpeningRow: View {
 
             VStack(alignment: .leading, spacing: 6) {
                 Text(bottleName ?? "Bottle")
-                    .font(.headline)
+                    .font(.title3.weight(.bold))
                     .foregroundStyle(TLTheme.text)
                     .lineLimit(1)
                     .minimumScaleFactor(0.85)
 
                 if event.source != .manual {
                     Text(event.source.displayName)
-                        .font(.caption.weight(.semibold))
+                        .font(.subheadline.weight(.semibold))
                         .padding(.horizontal, 9)
                         .padding(.vertical, 4)
                         .foregroundStyle(TLTheme.green)
@@ -245,11 +245,11 @@ struct OpeningRow: View {
 
             VStack(alignment: .trailing, spacing: 4) {
                 Text(event.openedAt.formatted(date: .omitted, time: .shortened))
-                    .font(.subheadline.weight(.semibold))
+                    .font(.title3.weight(.semibold))
                     .foregroundStyle(TLTheme.green)
 
                 Text(event.openedAt.formatted(date: .abbreviated, time: .omitted))
-                    .font(.caption)
+                    .font(.subheadline)
                     .foregroundStyle(TLTheme.gray)
             }
 

@@ -89,14 +89,14 @@ struct BottlesView: View {
                             } header: {
                                 HStack {
                                     Text(section.category.title)
-                                        .font(.headline.weight(.semibold))
+                                        .font(.title3.weight(.semibold))
                                         .foregroundStyle(section.category.accentColor)
                                         .textCase(nil)
 
                                     Spacer()
 
                                     Text("\(section.bottles.count)")
-                                        .font(.caption.weight(.semibold))
+                                        .font(.subheadline.weight(.semibold))
                                         .foregroundStyle(TLTheme.gray)
                                 }
                             }
@@ -195,7 +195,7 @@ private struct BottleManagementRow: View {
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(bottle.nickname)
-                    .font(.headline)
+                    .font(.title3.weight(.bold))
                     .foregroundStyle(TLTheme.text)
 
                 if let medicationName = bottle.medicationName {
@@ -204,17 +204,17 @@ private struct BottleManagementRow: View {
                         .foregroundStyle(TLTheme.gray)
                 }
 
-                Text(reminderSummary)
-                    .font(.caption)
+                Label(reminderSummary, systemImage: "bell")
+                    .font(.subheadline)
                     .foregroundStyle(TLTheme.gray)
             }
 
             Spacer(minLength: 8)
 
             Text(bottle.category.pickerTitle)
-                .font(.caption.weight(.bold))
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
+                .font(.subheadline.weight(.bold))
+                .padding(.horizontal, 10)
+                .padding(.vertical, 5)
                 .foregroundStyle(bottle.category.accentColor)
                 .background(bottle.category.accentColor.opacity(0.12))
                 .clipShape(Capsule())

@@ -242,13 +242,13 @@ private struct BottleCategorySection: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .firstTextBaseline) {
                 Text(section.category.title)
-                    .font(.headline.weight(.semibold))
+                    .font(.title3.weight(.semibold))
                     .foregroundStyle(section.category.accentColor)
 
                 Spacer()
 
                 Text("\(section.bottles.count) \(section.bottles.count == 1 ? "bottle" : "bottles")")
-                    .font(.caption.weight(.semibold))
+                    .font(.subheadline.weight(.semibold))
                     .foregroundStyle(TLTheme.gray)
             }
             .padding(.horizontal, 4)
@@ -367,7 +367,7 @@ struct BottleCard: View {
         VStack(alignment: .leading, spacing: 9) {
             VStack(alignment: .leading, spacing: 4) {
                 Text(bottle.nickname)
-                    .font(.headline)
+                    .font(.title3.weight(.bold))
                     .foregroundStyle(TLTheme.text)
                     .lineLimit(1)
                     .minimumScaleFactor(0.85)
