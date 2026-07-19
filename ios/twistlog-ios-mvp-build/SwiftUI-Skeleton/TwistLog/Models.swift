@@ -162,7 +162,7 @@ enum BottleCategory: String, CaseIterable, Codable, Identifiable {
         switch self {
         case .prescription: return "Rx"
         case .supplement: return "Supp"
-        case .water: return "Water"
+        case .water: return "H2O"
         case .other: return "Other"
         }
     }
