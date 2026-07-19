@@ -130,9 +130,12 @@ Today groups active bottles by type, not by separate tabs:
 
 1. Prescription
 2. Supplements
-3. Other
+3. Water
+4. Other
 
 Prescription stays first so important medications do not get pushed below vitamins or supplements. Sections stay on one screen so users do not have to switch tabs to see what needs attention.
+
+Water is for bottle-opening reminders such as school water bottles, kids water bottles, gym bottles, and bedside water. Keep wording to bottle openings and reminders; do not imply TwistLog confirms water was consumed.
 
 ### All-Done State
 
@@ -202,7 +205,7 @@ Use red warning styling. Do not use orange for warning states.
 Fields:
 
 - Bottle nickname, required.
-- Type: Prescription, Supplement, or Other.
+- Type: Prescription, Supplement, Water, or Other.
 - Medication name, optional.
 - Notes, optional.
 - Reminder schedule toggle.

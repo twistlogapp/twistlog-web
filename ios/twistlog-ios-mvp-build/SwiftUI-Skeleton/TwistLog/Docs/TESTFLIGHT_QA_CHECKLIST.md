@@ -11,9 +11,10 @@ Run this checklist before sharing each TestFlight build.
 - Add a bottle with only a nickname.
 - Add a Prescription bottle with medication name, notes, minimum opening interval, and one reminder.
 - Add a Supplement bottle.
-- Confirm Today groups bottles as Prescription first and Supplements second.
+- Add a Water bottle, such as `School water bottle`.
+- Confirm Today groups bottles as Prescription, Supplements, Water, and Other.
 - Confirm bottles inside each Today section sort by the next reminder time.
-- Confirm Prescription, Supplements, and Other have distinct but subtle category accents.
+- Confirm Prescription, Supplements, Water, and Other have distinct but subtle category accents.
 - Edit the bottle and add a second reminder time, for example morning and evening.
 - Edit an existing bottle's Type and confirm it moves to the correct Today section.
 - Confirm Today shows multiple reminder times.

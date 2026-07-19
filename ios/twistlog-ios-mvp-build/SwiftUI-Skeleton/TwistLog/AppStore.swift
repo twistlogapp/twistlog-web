@@ -325,8 +325,16 @@ final class AppStore: ObservableObject {
             category: .supplement,
             medicationName: nil
         )
+        let water = Bottle(
+            nickname: "School water bottle",
+            category: .water,
+            medicationName: nil,
+            reminders: [
+                BottleReminder(hour: 15, minute: 30)
+            ]
+        )
         return AppStore(
-            bottles: [morning, evening],
+            bottles: [morning, evening, water],
             openingEvents: [
                 OpeningEvent(
                     bottleId: morning.id,

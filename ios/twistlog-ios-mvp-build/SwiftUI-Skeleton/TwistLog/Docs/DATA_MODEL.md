@@ -24,7 +24,7 @@ struct Bottle: Identifiable, Hashable {
 }
 ```
 
-`category` groups Today into Prescription, Supplements, and Other. Existing local bottles saved before this field existed decode as `prescription`; users can edit supplements once to move them into the Supplements section.
+`category` groups Today into Prescription, Supplements, Water, and Other. Existing local bottles saved before this field existed decode as `prescription`; users can edit supplements, water bottles, or other bottles once to move them into the right section.
 
 `reminderEnabled`, `reminderHour`, `reminderMinute`, and `reminderDays` remain for backward compatibility with early v1 builds. New UI and scheduling should use `reminders`.
 
@@ -34,11 +34,14 @@ struct Bottle: Identifiable, Hashable {
 enum BottleCategory: String, CaseIterable, Codable, Identifiable {
     case prescription
     case supplement
+    case water
     case other
 }
 ```
 
-Today displays categories in this order: Prescription, Supplements, Other.
+Today displays categories in this order: Prescription, Supplements, Water, Other.
+
+Water is a first-class category for bottles such as school water bottles, kids water bottles, gym bottles, and bedside water. Keep copy opening-based: `Water bottle opened` and `Reminder to check water bottle`. Avoid claims such as `drank water`, `hydration complete`, or `water consumed`.
 
 ## BottleReminder
 

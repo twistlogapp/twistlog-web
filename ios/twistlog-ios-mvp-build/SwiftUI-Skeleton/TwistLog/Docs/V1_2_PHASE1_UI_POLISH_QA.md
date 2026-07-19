@@ -24,8 +24,6 @@ Expected category colors:
 - Water: blue.
 - Other: gray.
 
-Current note: Water is part of the V1.2 category plan. If the Water category has not been implemented in the build being tested, skip Water-specific checks and verify the remaining category colors.
-
 Verify:
 
 - [ ] Prescription section header is green.
@@ -37,9 +35,9 @@ Verify:
 - [ ] Other section header is gray.
 - [ ] Other card rail is gray.
 - [ ] Other History dot is gray.
-- [ ] If Water exists, Water section header is blue.
-- [ ] If Water exists, Water card rail is blue.
-- [ ] If Water exists, Water History dot is blue.
+- [ ] Water section header is blue.
+- [ ] Water card rail is blue.
+- [ ] Water History dot is blue.
 
 ## Status Color System
 
@@ -68,6 +66,7 @@ Create at least two bottles:
 
 - One Prescription bottle with a reminder later today.
 - One Supplement bottle with a reminder due now or earlier today.
+- One Water bottle, such as `School water bottle`, with a reminder later today.
 
 Verify:
 

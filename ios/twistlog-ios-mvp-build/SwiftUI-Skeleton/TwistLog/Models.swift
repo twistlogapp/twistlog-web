@@ -144,6 +144,7 @@ struct Bottle: Identifiable, Hashable, Codable {
 enum BottleCategory: String, CaseIterable, Codable, Identifiable {
     case prescription
     case supplement
+    case water
     case other
 
     var id: String { rawValue }
@@ -152,6 +153,7 @@ enum BottleCategory: String, CaseIterable, Codable, Identifiable {
         switch self {
         case .prescription: return "Prescription"
         case .supplement: return "Supplements"
+        case .water: return "Water"
         case .other: return "Other"
         }
     }
@@ -160,6 +162,7 @@ enum BottleCategory: String, CaseIterable, Codable, Identifiable {
         switch self {
         case .prescription: return "Rx"
         case .supplement: return "Supp"
+        case .water: return "Water"
         case .other: return "Other"
         }
     }

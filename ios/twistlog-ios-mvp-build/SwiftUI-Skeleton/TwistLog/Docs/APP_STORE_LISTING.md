@@ -42,7 +42,7 @@ WHAT TWISTLOG DOES
 • Set one or more daily reminders per bottle, such as morning and evening
 • See a recent-opening alert if a bottle was opened sooner than your chosen interval
 • Review opening history grouped by day
-• Organize bottles as Prescription, Supplements, or Other
+• Organize bottles as Prescription, Supplements, Water, or Other
 • Archive bottles you are no longer tracking without losing their history
 • Use the app with no account, login, or cloud setup
 
