@@ -46,9 +46,12 @@ struct AddBottleView: View {
                     Toggle("Reminder", isOn: $reminderEnabled)
 
                     if reminderEnabled {
-                        ForEach($reminders) { $reminder in
-                            ReminderEditorView(reminder: $reminder) {
-                                removeReminder(reminder.id)
+                        ForEach(reminderIds, id: \.self) { reminderId in
+                            if let reminderBinding = bindingForReminder(id: reminderId) {
+                                ReminderEditorView(reminder: reminderBinding) {
+                                    removeReminder(reminderId)
+                                }
+                                .id(reminderId)
                             }
                         }
 
@@ -166,8 +169,28 @@ struct AddBottleView: View {
         Set(normalizedReminders.flatMap(\.days))
     }
 
+    private var reminderIds: [UUID] {
+        reminders.map(\.id)
+    }
+
     private var nextReminderHour: Int {
         min((reminders.last?.hour ?? 8) + 12, 23)
+    }
+
+    private func bindingForReminder(id: UUID) -> Binding<BottleReminder>? {
+        guard reminders.contains(where: { $0.id == id }) else { return nil }
+
+        return Binding(
+            get: {
+                reminders.first(where: { $0.id == id }) ?? Self.defaultReminder()
+            },
+            set: { updatedReminder in
+                guard let index = reminders.firstIndex(where: { $0.id == id }) else { return }
+                var updatedReminders = reminders
+                updatedReminders[index] = updatedReminder
+                reminders = updatedReminders
+            }
+        )
     }
 
     private func save() {
