@@ -86,6 +86,19 @@ final class AppStore: ObservableObject {
         openingForMedicationDay(containing: date, for: bottle) != nil
     }
 
+    func openingForCalendarDay(containing date: Date = Date(), for bottle: Bottle) -> OpeningEvent? {
+        openingEvents
+            .filter { event in
+                event.bottleId == bottle.id && Calendar.current.isDate(event.openedAt, inSameDayAs: date)
+            }
+            .sorted { $0.openedAt > $1.openedAt }
+            .first
+    }
+
+    func hasOpeningForCalendarDay(containing date: Date = Date(), for bottle: Bottle) -> Bool {
+        openingForCalendarDay(containing: date, for: bottle) != nil
+    }
+
     func shouldWarnRecentOpening(for bottle: Bottle, now: Date = Date()) -> Bool {
         guard bottle.minimumIntervalEnabled,
               let minutes = bottle.minimumIntervalMinutes,

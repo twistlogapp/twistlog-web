@@ -77,7 +77,7 @@ struct TodayView: View {
         guard !bottles.isEmpty else { return false }
 
         return bottles.allSatisfy { bottle in
-            store.hasOpeningForMedicationDay(containing: currentDate, for: bottle)
+            store.hasOpeningForCalendarDay(containing: currentDate, for: bottle)
         }
     }
 
@@ -435,7 +435,7 @@ struct BottleCard: View {
     }
 
     private var todayStatus: TodayBottleStatus {
-        if let openedToday = store.openingForMedicationDay(containing: currentDate, for: bottle) {
+        if let openedToday = store.openingForCalendarDay(containing: currentDate, for: bottle) {
             return .opened(time: openedToday.openedAt.formatted(date: .omitted, time: .shortened))
         }
 
@@ -509,7 +509,7 @@ struct BottleCard: View {
     }
 
     private var hasOpenedToday: Bool {
-        store.hasOpeningForMedicationDay(containing: currentDate, for: bottle)
+        store.hasOpeningForCalendarDay(containing: currentDate, for: bottle)
     }
 
     private var cardBackground: Color {
@@ -685,16 +685,17 @@ struct OpeningRingAction: View {
 struct OpeningRingMark: View {
     var color: Color
 
-    private let startAngle: Double = 18
-    private let endAngle: Double = 338
-    private let markDiameter: CGFloat = 58
+    private let startAngle: Double = 10
+    private let endAngle: Double = 340
+    private let markDiameter: CGFloat = 64
     private let strokeWidth: CGFloat = 5
     private let dotDiameter: CGFloat = 12
 
     var body: some View {
         Canvas { context, size in
             let center = CGPoint(x: size.width / 2, y: size.height / 2)
-            let radius = min(size.width, size.height) / 2 - strokeWidth / 2
+            let dotClearance = (dotDiameter + 4) / 2
+            let radius = min(size.width, size.height) / 2 - max(strokeWidth / 2, dotClearance)
             let start = Angle.degrees(startAngle)
             let end = Angle.degrees(endAngle)
 
@@ -908,7 +909,7 @@ struct MultiRecordOpeningView: View {
                 if selectedBottleIds.isEmpty {
                     selectedBottleIds = Set(
                         store.activeBottles
-                            .filter { !store.hasOpeningForMedicationDay(containing: currentDate, for: $0) }
+                            .filter { !store.hasOpeningForCalendarDay(containing: currentDate, for: $0) }
                             .map(\.id)
                     )
                 }
@@ -940,7 +941,7 @@ struct MultiRecordOpeningView: View {
     }
 
     private func multiRecordSubtitle(for bottle: Bottle) -> String {
-        if store.hasOpeningForMedicationDay(containing: currentDate, for: bottle) {
+        if store.hasOpeningForCalendarDay(containing: currentDate, for: bottle) {
             return "Opened for today"
         }
 
