@@ -18,6 +18,11 @@ struct OpeningHistoryView: View {
                             .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
                             .listRowSeparator(.hidden)
                             .listRowBackground(Color.clear)
+                    } else {
+                        LastSevenDaysOpeningChart(events: store.openingEvents)
+                            .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 14, trailing: 16))
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.clear)
                     }
                 }
 
@@ -173,6 +178,110 @@ private struct HistoryEmptyPrompt: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(TLTheme.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+}
+
+private struct LastSevenDaysOpeningChart: View {
+    var events: [OpeningEvent]
+
+    private var days: [DailyOpeningCount] {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+
+        return (0..<7).reversed().compactMap { offset in
+            guard let date = calendar.date(byAdding: .day, value: -offset, to: today) else {
+                return nil
+            }
+
+            let count = events.filter { event in
+                calendar.isDate(event.openedAt, inSameDayAs: date)
+            }.count
+
+            return DailyOpeningCount(date: date, count: count)
+        }
+    }
+
+    private var totalOpenings: Int {
+        days.reduce(0) { $0 + $1.count }
+    }
+
+    private var maxCount: Int {
+        max(days.map(\.count).max() ?? 0, 1)
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(alignment: .firstTextBaseline) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Daily openings")
+                        .font(.title3.weight(.bold))
+                        .foregroundStyle(TLTheme.text)
+
+                    Text("Last 7 days")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(TLTheme.gray)
+                }
+
+                Spacer()
+
+                Text("\(totalOpenings) recorded")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(TLTheme.orange)
+            }
+
+            HStack(alignment: .bottom, spacing: 10) {
+                ForEach(days) { day in
+                    VStack(spacing: 7) {
+                        Text("\(day.count)")
+                            .font(.caption.weight(.bold))
+                            .foregroundStyle(day.count > 0 ? TLTheme.text : TLTheme.gray)
+                            .monospacedDigit()
+
+                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                            .fill(day.count > 0 ? TLTheme.orange : TLTheme.categoryGray.opacity(0.18))
+                            .frame(height: barHeight(for: day.count))
+                            .frame(maxWidth: .infinity)
+
+                        Text(day.weekdayLabel)
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(day.isToday ? TLTheme.orange : TLTheme.gray)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel("\(day.accessibilityDate), \(day.count) opening records")
+                }
+            }
+            .frame(height: 126, alignment: .bottom)
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(TLTheme.cardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .accessibilityElement(children: .contain)
+    }
+
+    private func barHeight(for count: Int) -> CGFloat {
+        guard count > 0 else { return 8 }
+        return 18 + CGFloat(count) / CGFloat(maxCount) * 54
+    }
+}
+
+private struct DailyOpeningCount: Identifiable {
+    var date: Date
+    var count: Int
+
+    var id: Date { date }
+
+    var weekdayLabel: String {
+        date.formatted(.dateTime.weekday(.abbreviated))
+    }
+
+    var isToday: Bool {
+        Calendar.current.isDateInToday(date)
+    }
+
+    var accessibilityDate: String {
+        date.formatted(date: .abbreviated, time: .omitted)
     }
 }
 
