@@ -641,11 +641,11 @@ struct OpeningRingAction: View {
             }
         } label: {
             VStack(spacing: 4) {
-                OpeningRingMark(color: status.accentColor)
+                OpeningRingMark(color: ringColor)
 
                 Text(caption)
                     .font(.caption2.weight(.bold))
-                    .foregroundStyle(status.accentColor)
+                    .foregroundStyle(captionColor)
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
             }
@@ -666,18 +666,38 @@ struct OpeningRingAction: View {
 
     private var caption: String {
         switch status {
-        case let .opened(time):
-            return time
+        case .opened:
+            return "Done today"
         case let .due(time):
             return "Due \(time)"
         case let .upcoming(time):
-            return time
-        case let .yesterday(time):
-            return "Yest \(time)"
-        case let .lastOpened(date):
-            return date
+            return "Next \(time)"
+        case .yesterday, .lastOpened:
+            return "Open"
         case .notOpened:
-            return "Tap"
+            return "Tap to log"
+        }
+    }
+
+    private var ringColor: Color {
+        switch status {
+        case .opened:
+            return TLTheme.green
+        case .due:
+            return TLTheme.orange
+        case .upcoming, .yesterday, .lastOpened, .notOpened:
+            return Color(uiColor: .systemGray3)
+        }
+    }
+
+    private var captionColor: Color {
+        switch status {
+        case .opened:
+            return TLTheme.green
+        case .due:
+            return TLTheme.orange
+        case .upcoming, .yesterday, .lastOpened, .notOpened:
+            return TLTheme.categoryGray
         }
     }
 }
