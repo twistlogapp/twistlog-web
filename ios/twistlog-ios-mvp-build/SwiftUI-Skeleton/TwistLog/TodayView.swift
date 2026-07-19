@@ -383,7 +383,7 @@ struct BottleCard: View {
 
             if !bottle.enabledReminders.isEmpty {
                 Label(reminderSummary, systemImage: "bell")
-                    .font(.caption)
+                    .font(.subheadline)
                     .foregroundStyle(TLTheme.gray)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
@@ -391,7 +391,7 @@ struct BottleCard: View {
 
             if shouldShowLeftStatusLine {
                 Label(statusDetailText, systemImage: statusDetailIcon)
-                    .font(.caption.weight(.semibold))
+                    .font(.subheadline.weight(.semibold))
                     .foregroundStyle(todayStatus.accentColor)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
@@ -655,12 +655,12 @@ struct OpeningRingAction: View {
                 OpeningRingMark(color: ringColor)
 
                 Text(caption)
-                    .font(.caption.weight(.bold))
+                    .font(.subheadline.weight(.bold))
                     .foregroundStyle(captionColor)
                     .lineLimit(1)
-                    .minimumScaleFactor(0.8)
+                    .minimumScaleFactor(0.75)
             }
-            .frame(width: 76)
+            .frame(width: 88)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
