@@ -41,7 +41,7 @@ struct OpeningHistoryView: View {
                         } header: {
                             Text(section.title)
                                 .font(.title3.weight(.semibold))
-                                .foregroundStyle(TLTheme.green)
+                                .foregroundStyle(TLTheme.orange)
                                 .textCase(nil)
                                 .padding(.leading, 4)
                         }
@@ -252,7 +252,7 @@ struct OpeningRow: View {
             VStack(alignment: .trailing, spacing: 4) {
                 Text(event.openedAt.formatted(date: .omitted, time: .shortened))
                     .font(.title3.weight(.semibold))
-                    .foregroundStyle(TLTheme.green)
+                    .foregroundStyle(TLTheme.text)
 
                 Text(event.openedAt.formatted(date: .abbreviated, time: .omitted))
                     .font(.subheadline)
