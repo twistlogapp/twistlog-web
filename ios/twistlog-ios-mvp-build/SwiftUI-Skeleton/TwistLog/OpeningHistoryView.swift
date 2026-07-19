@@ -19,7 +19,10 @@ struct OpeningHistoryView: View {
                             .listRowSeparator(.hidden)
                             .listRowBackground(Color.clear)
                     } else {
-                        LastSevenDaysOpeningChart(events: store.openingEvents)
+                        LastSevenDaysOpeningChart(
+                            events: store.openingEvents,
+                            bottles: store.bottles
+                        )
                             .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 14, trailing: 16))
                             .listRowSeparator(.hidden)
                             .listRowBackground(Color.clear)
@@ -183,6 +186,7 @@ private struct HistoryEmptyPrompt: View {
 
 private struct LastSevenDaysOpeningChart: View {
     var events: [OpeningEvent]
+    var bottles: [Bottle]
 
     private var days: [DailyOpeningCount] {
         let calendar = Calendar.current
@@ -203,6 +207,22 @@ private struct LastSevenDaysOpeningChart: View {
 
     private var totalOpenings: Int {
         days.reduce(0) { $0 + $1.count }
+    }
+
+    private var categoryCounts: [CategoryOpeningCount] {
+        let recentDates = Set(days.map(\.date))
+        let calendar = Calendar.current
+        let bottleCategories = Dictionary(uniqueKeysWithValues: bottles.map { ($0.id, $0.category) })
+        let counts = Dictionary(grouping: events) { event -> BottleCategory in
+            bottleCategories[event.bottleId] ?? .other
+        }
+
+        return BottleCategory.allCases.map { category in
+            let count = (counts[category] ?? []).filter { event in
+                recentDates.contains(calendar.startOfDay(for: event.openedAt))
+            }.count
+            return CategoryOpeningCount(category: category, count: count)
+        }
     }
 
     private var maxCount: Int {
@@ -252,6 +272,15 @@ private struct LastSevenDaysOpeningChart: View {
                 }
             }
             .frame(height: 126, alignment: .bottom)
+
+            LazyVGrid(columns: [
+                GridItem(.adaptive(minimum: 74), spacing: 8)
+            ], alignment: .leading, spacing: 8) {
+                ForEach(categoryCounts) { item in
+                    CategoryCountChip(item: item)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -263,6 +292,40 @@ private struct LastSevenDaysOpeningChart: View {
     private func barHeight(for count: Int) -> CGFloat {
         guard count > 0 else { return 8 }
         return 18 + CGFloat(count) / CGFloat(maxCount) * 54
+    }
+}
+
+private struct CategoryOpeningCount: Identifiable {
+    var category: BottleCategory
+    var count: Int
+
+    var id: BottleCategory { category }
+}
+
+private struct CategoryCountChip: View {
+    var item: CategoryOpeningCount
+
+    var body: some View {
+        HStack(spacing: 5) {
+            Circle()
+                .fill(item.category.accentColor)
+                .frame(width: 7, height: 7)
+                .accessibilityHidden(true)
+
+            Text(item.category.pickerTitle)
+                .font(.caption.weight(.bold))
+
+            Text("\(item.count)")
+                .font(.caption.weight(.bold))
+                .monospacedDigit()
+        }
+        .padding(.horizontal, 9)
+        .padding(.vertical, 6)
+        .foregroundStyle(item.category.accentColor)
+        .background(item.category.accentColor.opacity(0.12))
+        .clipShape(Capsule())
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(item.category.title), \(item.count) opening records")
     }
 }
 
