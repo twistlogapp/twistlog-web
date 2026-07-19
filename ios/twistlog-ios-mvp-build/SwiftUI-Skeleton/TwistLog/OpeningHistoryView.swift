@@ -28,6 +28,7 @@ struct OpeningHistoryView: View {
                                 OpeningRow(
                                     event: event,
                                     bottleName: bottleName(for: event),
+                                    category: bottleCategory(for: event),
                                     style: .card,
                                     onDelete: {
                                         eventPendingDeletion = event
@@ -119,6 +120,10 @@ struct OpeningHistoryView: View {
     private func bottleName(for event: OpeningEvent) -> String? {
         store.bottles.first(where: { $0.id == event.bottleId })?.nickname
     }
+
+    private func bottleCategory(for event: OpeningEvent) -> BottleCategory? {
+        store.bottles.first(where: { $0.id == event.bottleId })?.category
+    }
 }
 
 private struct OpeningHistorySection: Identifiable {
@@ -179,6 +184,7 @@ enum OpeningRowStyle {
 struct OpeningRow: View {
     var event: OpeningEvent
     var bottleName: String?
+    var category: BottleCategory? = nil
     var style: OpeningRowStyle = .compact
     var onDelete: (() -> Void)?
 
@@ -193,7 +199,7 @@ struct OpeningRow: View {
 
     private var compactRow: some View {
         HStack(alignment: .top, spacing: 12) {
-            OrangeEventDot()
+            CategoryEventDot(category: category)
                 .padding(.top, 6)
                 .accessibilityHidden(true)
 
@@ -220,7 +226,7 @@ struct OpeningRow: View {
 
     private var cardRow: some View {
         HStack(alignment: .center, spacing: 12) {
-            OrangeEventDot()
+            CategoryEventDot(category: category)
                 .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 6) {
@@ -276,5 +282,17 @@ struct OpeningRow: View {
                 }
             }
         }
+    }
+}
+
+private struct CategoryEventDot: View {
+    var category: BottleCategory?
+
+    var body: some View {
+        Circle()
+            .fill(category?.accentColor ?? TLTheme.orange)
+            .frame(width: 9, height: 9)
+            .accessibilityLabel("Opening record")
+            .accessibilityAddTraits(.isImage)
     }
 }
