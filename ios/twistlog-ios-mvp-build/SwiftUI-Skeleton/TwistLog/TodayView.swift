@@ -403,7 +403,7 @@ struct BottleCard: View {
 
     private var shouldShowLeftStatusLine: Bool {
         switch todayStatus {
-        case .upcoming:
+        case .soon, .upcoming:
             return false
         case .opened, .due, .yesterday, .lastOpened, .notOpened:
             return true
@@ -416,6 +416,8 @@ struct BottleCard: View {
             return "Last opened \(time)"
         case let .due(time):
             return "Due \(time)"
+        case let .soon(time):
+            return "Soon \(time)"
         case let .upcoming(time):
             return "Next due \(time)"
         case let .yesterday(time):
@@ -433,7 +435,7 @@ struct BottleCard: View {
             return "checkmark.circle"
         case .due:
             return "hourglass"
-        case .upcoming, .notOpened:
+        case .soon, .upcoming, .notOpened:
             return "clock"
         }
     }
@@ -454,6 +456,9 @@ struct BottleCard: View {
             let formattedTime = reminder.formatted(date: .omitted, time: .shortened)
             if reminder <= currentDate {
                 return .due(time: formattedTime)
+            }
+            if reminder.timeIntervalSince(currentDate) <= Self.soonThreshold {
+                return .soon(time: formattedTime)
             }
             return .upcoming(time: formattedTime)
         }
@@ -514,6 +519,8 @@ struct BottleCard: View {
         }
         .min()
     }
+
+    private static let soonThreshold: TimeInterval = 2 * 60 * 60
 
     private var hasAnyOpening: Bool {
         store.lastOpening(for: bottle) != nil
@@ -681,6 +688,8 @@ struct OpeningRingAction: View {
             return "Done"
         case let .due(time):
             return "Due \(compactTime(time))"
+        case let .soon(time):
+            return "Soon \(compactTime(time))"
         case let .upcoming(time):
             return "Next \(compactTime(time))"
         case .yesterday, .lastOpened:
@@ -702,6 +711,8 @@ struct OpeningRingAction: View {
             return TLTheme.green
         case .due:
             return TLTheme.orange
+        case .soon:
+            return TLTheme.orange.opacity(0.72)
         case .upcoming, .yesterday, .lastOpened, .notOpened:
             return Color(uiColor: .systemGray3)
         }
@@ -713,6 +724,8 @@ struct OpeningRingAction: View {
             return TLTheme.green
         case .due:
             return TLTheme.orange
+        case .soon:
+            return TLTheme.orange.opacity(0.9)
         case .upcoming, .yesterday, .lastOpened, .notOpened:
             return TLTheme.categoryGray
         }
@@ -802,6 +815,7 @@ struct StatusPill: View {
 enum TodayBottleStatus {
     case opened(time: String)
     case due(time: String)
+    case soon(time: String)
     case upcoming(time: String)
     case yesterday(time: String)
     case lastOpened(date: String)
@@ -811,6 +825,7 @@ enum TodayBottleStatus {
         switch self {
         case let .opened(time): return "Opened \(time)"
         case let .due(time): return "Due \(time)"
+        case let .soon(time): return "Soon \(time)"
         case let .upcoming(time): return "Upcoming \(time)"
         case let .yesterday(time): return "Yesterday \(time)"
         case let .lastOpened(date): return "Last \(date)"
@@ -822,6 +837,7 @@ enum TodayBottleStatus {
         switch self {
         case .opened: return TLTheme.green
         case .due: return TLTheme.orange
+        case .soon: return TLTheme.orange.opacity(0.9)
         case .upcoming, .yesterday, .lastOpened, .notOpened: return TLTheme.categoryGray
         }
     }
@@ -830,6 +846,7 @@ enum TodayBottleStatus {
         switch self {
         case .opened: return TLTheme.green.opacity(0.12)
         case .due: return TLTheme.orange.opacity(0.16)
+        case .soon: return TLTheme.orange.opacity(0.1)
         case .upcoming, .yesterday, .lastOpened, .notOpened: return TLTheme.categoryGray.opacity(0.14)
         }
     }
@@ -838,6 +855,7 @@ enum TodayBottleStatus {
         switch self {
         case .opened: return TLTheme.green
         case .due: return TLTheme.orange
+        case .soon: return TLTheme.orange.opacity(0.9)
         case .upcoming, .yesterday, .lastOpened, .notOpened: return TLTheme.categoryGray
         }
     }

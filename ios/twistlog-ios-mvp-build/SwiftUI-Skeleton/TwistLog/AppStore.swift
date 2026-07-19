@@ -37,6 +37,7 @@ final class AppStore: ObservableObject {
 
         if loadSavedState {
             load()
+            refreshScheduledReminders()
         }
     }
 
@@ -316,6 +317,17 @@ final class AppStore: ObservableObject {
                 await reminderScheduler.rescheduleReminder(for: bottle)
             } else {
                 reminderScheduler.cancelReminder(for: bottle.id)
+            }
+        }
+    }
+
+    private func refreshScheduledReminders() {
+        let bottlesToRefresh = bottles.filter { !$0.isArchived && !$0.enabledReminders.isEmpty }
+        guard !bottlesToRefresh.isEmpty else { return }
+
+        Task {
+            for bottle in bottlesToRefresh {
+                await reminderScheduler.rescheduleReminder(for: bottle)
             }
         }
     }

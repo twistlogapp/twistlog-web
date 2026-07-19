@@ -52,25 +52,40 @@ enum NotificationManager {
         guard granted else { return }
 
         for (index, reminder) in reminders.enumerated() {
-            for weekday in reminder.days {
+            let content = UNMutableNotificationContent()
+            content.title = "\(bottle.nickname) reminder"
+            content.body = "Time to check your bottle."
+            content.sound = .default
+
+            if reminder.days == Set(Weekday.allCases) {
                 var components = DateComponents()
-                components.weekday = weekday.rawValue
                 components.hour = reminder.hour
                 components.minute = reminder.minute
 
-                let content = UNMutableNotificationContent()
-                content.title = "\(bottle.nickname) reminder"
-                content.body = "Time to check your bottle."
-                content.sound = .default
-
                 let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
                 let request = UNNotificationRequest(
-                    identifier: reminderIdentifier(for: bottle.id, reminderIndex: index, weekday: weekday),
+                    identifier: dailyReminderIdentifier(for: bottle.id, reminderIndex: index),
                     content: content,
                     trigger: trigger
                 )
 
                 try? await UNUserNotificationCenter.current().add(request)
+            } else {
+                for weekday in reminder.days {
+                    var components = DateComponents()
+                    components.weekday = weekday.rawValue
+                    components.hour = reminder.hour
+                    components.minute = reminder.minute
+
+                    let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
+                    let request = UNNotificationRequest(
+                        identifier: weeklyReminderIdentifier(for: bottle.id, reminderIndex: index, weekday: weekday),
+                        content: content,
+                        trigger: trigger
+                    )
+
+                    try? await UNUserNotificationCenter.current().add(request)
+                }
             }
         }
     }
@@ -80,7 +95,8 @@ enum NotificationManager {
 
         let legacyIdentifiers = Weekday.allCases.map { legacyReminderIdentifier(for: bottleId, weekday: $0) }
         let identifiers = (0..<12).flatMap { index in
-            Weekday.allCases.map { reminderIdentifier(for: bottleId, reminderIndex: index, weekday: $0) }
+            [dailyReminderIdentifier(for: bottleId, reminderIndex: index)] +
+                Weekday.allCases.map { weeklyReminderIdentifier(for: bottleId, reminderIndex: index, weekday: $0) }
         }
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: identifiers)
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: legacyIdentifiers)
@@ -106,7 +122,11 @@ enum NotificationManager {
         try? await UNUserNotificationCenter.current().add(request)
     }
 
-    private static func reminderIdentifier(for bottleId: UUID, reminderIndex: Int, weekday: Weekday) -> String {
+    private static func dailyReminderIdentifier(for bottleId: UUID, reminderIndex: Int) -> String {
+        "twistlog.reminder.\(bottleId.uuidString).\(reminderIndex).daily"
+    }
+
+    private static func weeklyReminderIdentifier(for bottleId: UUID, reminderIndex: Int, weekday: Weekday) -> String {
         "twistlog.reminder.\(bottleId.uuidString).\(reminderIndex).\(weekday.rawValue)"
     }
 
