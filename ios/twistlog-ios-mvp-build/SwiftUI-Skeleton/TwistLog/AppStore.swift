@@ -16,6 +16,9 @@ final class AppStore: ObservableObject {
     @Published var displayName: String {
         didSet { save() }
     }
+    @Published var lastSeenWhatsNewVersion: String {
+        didSet { save() }
+    }
 
     private let storageKey = "twistlog.appState.v1"
     private let reminderScheduler: ReminderScheduling
@@ -26,6 +29,7 @@ final class AppStore: ObservableObject {
         openingEvents: [OpeningEvent] = [],
         hasCompletedOnboarding: Bool = false,
         displayName: String = "",
+        lastSeenWhatsNewVersion: String = "",
         loadSavedState: Bool = true,
         reminderScheduler: ReminderScheduling = NotificationManager.liveScheduler
     ) {
@@ -33,6 +37,7 @@ final class AppStore: ObservableObject {
         self.openingEvents = openingEvents
         self.hasCompletedOnboarding = hasCompletedOnboarding
         self.displayName = displayName
+        self.lastSeenWhatsNewVersion = lastSeenWhatsNewVersion
         self.reminderScheduler = reminderScheduler
 
         if loadSavedState {
@@ -311,6 +316,7 @@ final class AppStore: ObservableObject {
         openingEvents = state.openingEvents
         hasCompletedOnboarding = state.hasCompletedOnboarding
         displayName = state.displayName
+        lastSeenWhatsNewVersion = state.lastSeenWhatsNewVersion
     }
 
     private func save() {
@@ -320,7 +326,8 @@ final class AppStore: ObservableObject {
             bottles: bottles,
             openingEvents: openingEvents,
             hasCompletedOnboarding: hasCompletedOnboarding,
-            displayName: displayName
+            displayName: displayName,
+            lastSeenWhatsNewVersion: lastSeenWhatsNewVersion
         )
 
         guard let data = try? JSONEncoder().encode(state) else { return }
@@ -346,6 +353,14 @@ final class AppStore: ObservableObject {
                 await reminderScheduler.rescheduleReminder(for: bottle)
             }
         }
+    }
+
+    func shouldShowWhatsNew(version: String) -> Bool {
+        hasCompletedOnboarding && lastSeenWhatsNewVersion != version
+    }
+
+    func markWhatsNewSeen(version: String) {
+        lastSeenWhatsNewVersion = version
     }
 
     static let preview: AppStore = {
@@ -388,6 +403,7 @@ final class AppStore: ObservableObject {
                 )
             ],
             hasCompletedOnboarding: true,
+            lastSeenWhatsNewVersion: WhatsNewContent.version,
             loadSavedState: false,
             reminderScheduler: NoOpReminderScheduler()
         )
@@ -413,24 +429,28 @@ private struct PersistedAppState: Codable {
     var openingEvents: [OpeningEvent]
     var hasCompletedOnboarding: Bool
     var displayName: String = ""
+    var lastSeenWhatsNewVersion: String = ""
 
     enum CodingKeys: String, CodingKey {
         case bottles
         case openingEvents
         case hasCompletedOnboarding
         case displayName
+        case lastSeenWhatsNewVersion
     }
 
     init(
         bottles: [Bottle],
         openingEvents: [OpeningEvent],
         hasCompletedOnboarding: Bool,
-        displayName: String = ""
+        displayName: String = "",
+        lastSeenWhatsNewVersion: String = ""
     ) {
         self.bottles = bottles
         self.openingEvents = openingEvents
         self.hasCompletedOnboarding = hasCompletedOnboarding
         self.displayName = displayName
+        self.lastSeenWhatsNewVersion = lastSeenWhatsNewVersion
     }
 
     init(from decoder: Decoder) throws {
@@ -439,6 +459,7 @@ private struct PersistedAppState: Codable {
         openingEvents = try container.decode([OpeningEvent].self, forKey: .openingEvents)
         hasCompletedOnboarding = try container.decode(Bool.self, forKey: .hasCompletedOnboarding)
         displayName = try container.decodeIfPresent(String.self, forKey: .displayName) ?? ""
+        lastSeenWhatsNewVersion = try container.decodeIfPresent(String.self, forKey: .lastSeenWhatsNewVersion) ?? ""
     }
 }
 

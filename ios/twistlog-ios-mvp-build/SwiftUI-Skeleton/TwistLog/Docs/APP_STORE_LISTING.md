@@ -70,19 +70,31 @@ medication,supplement,pill,vitamin,reminder,log,history,caregiver,senior,routine
 ## Reviewer Notes (App Review Information — private, not public)
 
 ```text
-TwistLog is a local-first bottle-opening tracker. There is no account, login, or backend — all data (bottles, opening events, reminders) is stored on-device via UserDefaults. No test credentials are needed.
+TwistLog is already approved and live on the App Store. This V1.2 update is a feature polish release focused on clearer bottle-opening logs, better daily review, and safer display-only bottle context.
 
-To test the core flow:
-1. Complete onboarding (4 short screens explaining the app records bottle-opening events, not medication taken).
-2. Tap the + button to add a bottle (nickname required; everything else optional).
-3. Tap "Opened now" to record an opening — a brief "Opening recorded." confirmation appears and fades after ~2 seconds.
-4. Optionally enable a reminder time in Add/Edit Bottle; local notification permission is requested only when a reminder is turned on, with a clear explanation beforehand.
-5. Opening History (second tab) shows recorded openings grouped by day.
-6. Bottles can be archived (Details > Archive Bottle) and restored from Settings > Archived Bottles; archiving preserves history.
+What changed in this build:
+- Redesigned Today cards with tappable bottle tiles and ring-based logging.
+- Added clearer ring states: Done, Due, Soon, Next, and Log.
+- Added Water as a first-class bottle category for school, gym, bedside, or kids water bottles.
+- Added optional display-only bottle context, such as amount/label and timing note.
+- Added a Last 7 Days History chart with tap-to-inspect daily counts and category totals.
+- Added edit opening time from History and Bottle Details.
+- Improved notification scheduling reliability for daily reminders.
+- Added a What's New card after update.
+- Continued dark mode, larger text, and readability polish.
 
-Important: TwistLog does not confirm medication was taken, does not verify dosage, and does not give medical advice. Openings are recorded based on user input, not automatic or sensor-based detection. All in-app and notification copy is intentionally scoped to "bottle opened," not "dose taken." This is documented in-app under Settings > About and in the onboarding safety screen.
+Reviewer testing steps:
+1. Launch the app and complete onboarding if needed.
+2. Add a bottle from the Bottles or Today screen.
+3. Optionally enter display-only context such as `40mg`, `With food`, `16 oz bottle`, or `After school`.
+4. Set one or more local reminder times.
+5. Tap a Today card to open Details.
+6. Tap a ring to record an opening, or long-press the ring to record immediately.
+7. Open History and tap a Last 7 Days bar to inspect daily opening counts.
+8. Edit an opening time from History or Bottle Details.
+9. Add a Water bottle and confirm it appears under the Water section.
 
-No analytics, ad tracking, or third-party SDKs are included in this build.
+Important: TwistLog records bottle-opening events based on user input. It does not confirm medication was taken, verify dosage, measure water consumed, or provide medical advice. All data remains local to the device. No account, login, subscription, analytics, or third-party SDK is included in this build.
 
 Guideline 4.3 clarification: TwistLog is intentionally scoped as a personal bottle-opening log, not a medication ingestion, dosage, or clinical adherence app. Users record bottle-opening events manually, can review opening history, and can set local reminder nudges. The recent-opening alert is based on the user's own recorded openings and chosen interval. TwistLog does not verify medication was taken, does not manage dosage, and does not provide medical advice.
 ```

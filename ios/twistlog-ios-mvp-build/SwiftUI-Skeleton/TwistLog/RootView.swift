@@ -15,6 +15,9 @@ struct RootView: View {
 }
 
 struct MainTabView: View {
+    @EnvironmentObject private var store: AppStore
+    @State private var showingWhatsNew = false
+
     var body: some View {
         TabView {
             TodayView()
@@ -38,6 +41,107 @@ struct MainTabView: View {
                 }
         }
         .tint(TLTheme.green)
+        .onAppear {
+            showingWhatsNew = store.shouldShowWhatsNew(version: WhatsNewContent.version)
+        }
+        .sheet(isPresented: $showingWhatsNew, onDismiss: {
+            store.markWhatsNewSeen(version: WhatsNewContent.version)
+        }) {
+            WhatsNewView {
+                store.markWhatsNewSeen(version: WhatsNewContent.version)
+                showingWhatsNew = false
+            }
+        }
+    }
+}
+
+enum WhatsNewContent {
+    static let version = "1.2"
+    static let items: [(title: String, detail: String, systemImage: String)] = [
+        (
+            title: "Clearer Today cards",
+            detail: "Tap the ring to record an opening, long-press to log just now, and tap the card for details.",
+            systemImage: "circle.dashed"
+        ),
+        (
+            title: "Water and bottle context",
+            detail: "Track water bottles and add optional display-only notes like 40mg, with food, or after school.",
+            systemImage: "drop"
+        ),
+        (
+            title: "History insights",
+            detail: "Review the last 7 days, tap a day to inspect opening counts, and edit opening times when needed.",
+            systemImage: "chart.bar"
+        )
+    ]
+}
+
+private struct WhatsNewView: View {
+    var onDone: () -> Void
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 22) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("What's New")
+                            .font(.largeTitle.weight(.bold))
+                            .foregroundStyle(TLTheme.text)
+
+                        Text("TwistLog \(WhatsNewContent.version)")
+                            .font(.headline)
+                            .foregroundStyle(TLTheme.green)
+
+                        Text("More readable daily cards, richer bottle context, and better opening history.")
+                            .font(.body)
+                            .foregroundStyle(TLTheme.gray)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+
+                    VStack(alignment: .leading, spacing: 14) {
+                        ForEach(WhatsNewContent.items, id: \.title) { item in
+                            HStack(alignment: .top, spacing: 12) {
+                                Image(systemName: item.systemImage)
+                                    .font(.title3.weight(.semibold))
+                                    .foregroundStyle(TLTheme.green)
+                                    .frame(width: 28)
+                                    .accessibilityHidden(true)
+
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(item.title)
+                                        .font(.headline.weight(.bold))
+                                        .foregroundStyle(TLTheme.text)
+
+                                    Text(item.detail)
+                                        .font(.subheadline)
+                                        .foregroundStyle(TLTheme.gray)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
+                            }
+                            .padding(14)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(TLTheme.cardBackground)
+                            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                        }
+                    }
+
+                    Text("TwistLog records bottle-opening events based on your input. It does not confirm medication was taken and is not medical advice.")
+                        .font(.footnote)
+                        .foregroundStyle(TLTheme.gray)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .padding(20)
+            }
+            .background(TLTheme.lightGray)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") {
+                        onDone()
+                    }
+                    .fontWeight(.semibold)
+                }
+            }
+        }
     }
 }
 

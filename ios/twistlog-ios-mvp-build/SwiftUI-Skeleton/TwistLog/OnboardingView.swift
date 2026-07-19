@@ -68,6 +68,7 @@ struct OnboardingView: View {
                     if step < pages.count - 1 {
                         step += 1
                     } else {
+                        store.markWhatsNewSeen(version: WhatsNewContent.version)
                         store.hasCompletedOnboarding = true
                     }
                 } label: {
