@@ -409,9 +409,9 @@ struct BottleCard: View {
 
     private var shouldShowLeftStatusLine: Bool {
         switch todayStatus {
-        case .soon, .upcoming:
+        case .due, .soon, .upcoming:
             return false
-        case .opened, .due, .yesterday, .lastOpened, .notOpened:
+        case .opened, .yesterday, .lastOpened, .notOpened:
             return true
         }
     }
