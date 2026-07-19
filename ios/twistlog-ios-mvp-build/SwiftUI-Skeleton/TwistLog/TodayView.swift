@@ -655,10 +655,10 @@ struct OpeningRingAction: View {
                 OpeningRingMark(color: ringColor)
 
                 Text(caption)
-                    .font(.caption2.weight(.bold))
+                    .font(.caption.weight(.bold))
                     .foregroundStyle(captionColor)
                     .lineLimit(1)
-                    .minimumScaleFactor(0.7)
+                    .minimumScaleFactor(0.8)
             }
             .frame(width: 76)
             .contentShape(Rectangle())
@@ -678,16 +678,22 @@ struct OpeningRingAction: View {
     private var caption: String {
         switch status {
         case .opened:
-            return "Done today"
+            return "Done"
         case let .due(time):
-            return "Due \(time)"
+            return "Due \(compactTime(time))"
         case let .upcoming(time):
-            return "Next \(time)"
+            return "Next \(compactTime(time))"
         case .yesterday, .lastOpened:
             return "Open"
         case .notOpened:
-            return "Tap to log"
+            return "Log"
         }
+    }
+
+    private func compactTime(_ time: String) -> String {
+        time
+            .replacingOccurrences(of: ":00", with: "")
+            .replacingOccurrences(of: "\u{202F}", with: " ")
     }
 
     private var ringColor: Color {
