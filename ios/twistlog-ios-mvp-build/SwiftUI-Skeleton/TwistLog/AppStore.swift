@@ -270,6 +270,18 @@ final class AppStore: ObservableObject {
         openingEvents.removeAll { $0.id == event.id }
     }
 
+    func updateOpening(_ event: OpeningEvent, openedAt: Date) {
+        guard let index = openingEvents.firstIndex(where: { $0.id == event.id }) else { return }
+
+        var updatedEvent = openingEvents[index]
+        updatedEvent.openedAt = min(openedAt, Date())
+        updatedEvent.editedAt = Date()
+
+        var updatedEvents = openingEvents
+        updatedEvents[index] = updatedEvent
+        openingEvents = updatedEvents
+    }
+
     private func load() {
         isLoading = true
         defer { isLoading = false }

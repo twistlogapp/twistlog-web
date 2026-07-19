@@ -14,6 +14,7 @@ struct BottleDetailView: View {
     @State private var showRecordOptions = false
     @State private var pendingOpeningDate: Date?
     @State private var lateOpeningRequest: LateOpeningRequest?
+    @State private var eventPendingEdit: OpeningEvent?
     @State private var lastRecordedEvent: OpeningEvent?
     @State private var didLongPressOpenedNow = false
 
@@ -81,7 +82,14 @@ struct BottleDetailView: View {
 
                     Section("Last opening") {
                         if let last = store.lastOpening(for: bottle) {
-                            OpeningRow(event: last, bottleName: nil)
+                            OpeningRow(
+                                event: last,
+                                bottleName: nil,
+                                category: bottle.category,
+                                onEdit: {
+                                    eventPendingEdit = last
+                                }
+                            )
                         } else {
                             Text("No opening yet")
                                 .foregroundStyle(TLTheme.gray)
@@ -120,7 +128,14 @@ struct BottleDetailView: View {
                                 .foregroundStyle(TLTheme.gray)
                         } else {
                             ForEach(events) { event in
-                                OpeningRow(event: event, bottleName: nil)
+                                OpeningRow(
+                                    event: event,
+                                    bottleName: nil,
+                                    category: bottle.category,
+                                    onEdit: {
+                                        eventPendingEdit = event
+                                    }
+                                )
                             }
                             .onDelete { offsets in
                                 deleteOpenings(at: offsets, for: events)
@@ -204,6 +219,12 @@ struct BottleDetailView: View {
                     LateOpeningSheet(request: request) { openedAt in
                         lateOpeningRequest = nil
                         requestOpening(for: bottle, at: openedAt)
+                    }
+                }
+                .sheet(item: $eventPendingEdit) { event in
+                    EditOpeningTimeSheet(event: event) { updatedDate in
+                        store.updateOpening(event, openedAt: updatedDate)
+                        eventPendingEdit = nil
                     }
                 }
             } else {

@@ -3,6 +3,7 @@ import SwiftUI
 struct OpeningHistoryView: View {
     @EnvironmentObject private var store: AppStore
     @State private var eventPendingDeletion: OpeningEvent?
+    @State private var eventPendingEdit: OpeningEvent?
 
     var body: some View {
         NavigationStack {
@@ -38,6 +39,9 @@ struct OpeningHistoryView: View {
                                     bottleName: bottleName(for: event),
                                     category: bottleCategory(for: event),
                                     style: .card,
+                                    onEdit: {
+                                        eventPendingEdit = event
+                                    },
                                     onDelete: {
                                         eventPendingDeletion = event
                                     }
@@ -75,6 +79,12 @@ struct OpeningHistoryView: View {
                 }
             } message: {
                 Text("This removes this opening from History and may update Today.")
+            }
+            .sheet(item: $eventPendingEdit) { event in
+                EditOpeningTimeSheet(event: event) { updatedDate in
+                    store.updateOpening(event, openedAt: updatedDate)
+                    eventPendingEdit = nil
+                }
             }
         }
     }
@@ -356,6 +366,7 @@ struct OpeningRow: View {
     var bottleName: String?
     var category: BottleCategory? = nil
     var style: OpeningRowStyle = .compact
+    var onEdit: (() -> Void)?
     var onDelete: (() -> Void)?
 
     var body: some View {
@@ -392,6 +403,25 @@ struct OpeningRow: View {
         }
         .padding(.vertical, 4)
         .accessibilityElement(children: .combine)
+        .swipeActions(edge: .leading, allowsFullSwipe: false) {
+            if let onEdit {
+                Button {
+                    onEdit()
+                } label: {
+                    Label("Edit", systemImage: "pencil")
+                }
+                .tint(TLTheme.green)
+            }
+        }
+        .contextMenu {
+            if let onEdit {
+                Button {
+                    onEdit()
+                } label: {
+                    Label("Edit opening time", systemImage: "pencil")
+                }
+            }
+        }
     }
 
     private var cardRow: some View {
@@ -434,6 +464,16 @@ struct OpeningRow: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(TLTheme.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .swipeActions(edge: .leading, allowsFullSwipe: false) {
+            if let onEdit {
+                Button {
+                    onEdit()
+                } label: {
+                    Label("Edit", systemImage: "pencil")
+                }
+                .tint(TLTheme.green)
+            }
+        }
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
             if let onDelete {
                 Button(role: .destructive) {
@@ -444,11 +484,66 @@ struct OpeningRow: View {
             }
         }
         .contextMenu {
+            if let onEdit {
+                Button {
+                    onEdit()
+                } label: {
+                    Label("Edit opening time", systemImage: "pencil")
+                }
+            }
+
             if let onDelete {
                 Button(role: .destructive) {
                     onDelete()
                 } label: {
                     Label("Delete opening", systemImage: "trash")
+                }
+            }
+        }
+    }
+}
+
+struct EditOpeningTimeSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @State private var openedAt: Date
+
+    var event: OpeningEvent
+    var onUpdate: (Date) -> Void
+
+    init(event: OpeningEvent, onUpdate: @escaping (Date) -> Void) {
+        self.event = event
+        self.onUpdate = onUpdate
+        self._openedAt = State(initialValue: min(event.openedAt, Date()))
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    DatePicker(
+                        "Opening time",
+                        selection: $openedAt,
+                        in: ...Date(),
+                        displayedComponents: [.date, .hourAndMinute]
+                    )
+                } footer: {
+                    Text("Update the opening record if the original time was entered incorrectly. TwistLog records your correction based on your input.")
+                }
+            }
+            .navigationTitle("Edit opening time")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Update") {
+                        onUpdate(openedAt)
+                        dismiss()
+                    }
                 }
             }
         }
