@@ -315,9 +315,15 @@ private struct LastSevenDaysOpeningChart: View {
 
             SelectedDayOpeningSummary(day: selectedDay, categoryCounts: selectedCategoryCounts)
 
-            HStack(spacing: 6) {
-                ForEach(categoryCounts) { item in
-                    CategoryCountChip(item: item)
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Last 7 days by category")
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(TLTheme.gray)
+
+                HStack(spacing: 6) {
+                    ForEach(categoryCounts) { item in
+                        CategoryCountChip(item: item)
+                    }
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)

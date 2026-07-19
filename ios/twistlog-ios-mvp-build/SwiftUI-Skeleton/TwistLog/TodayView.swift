@@ -381,13 +381,11 @@ struct BottleCard: View {
                 }
             }
 
-            if !bottle.enabledReminders.isEmpty {
-                Label(reminderSummary, systemImage: "bell")
-                    .font(.subheadline)
-                    .foregroundStyle(TLTheme.gray)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.8)
-            }
+            Label(reminderSummary, systemImage: reminderSummaryIcon)
+                .font(.subheadline)
+                .foregroundStyle(TLTheme.gray)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
 
             if shouldShowLeftStatusLine {
                 Label(statusDetailText, systemImage: statusDetailIcon)
@@ -556,6 +554,10 @@ struct BottleCard: View {
         return times
     }
 
+    private var reminderSummaryIcon: String {
+        bottle.enabledReminders.isEmpty ? "bell.slash" : "bell"
+    }
+
     private func reminderDaySummary(_ reminder: BottleReminder) -> String {
         if reminder.days.count == Weekday.allCases.count {
             return "daily"
@@ -692,9 +694,7 @@ struct OpeningRingAction: View {
             return "Soon \(compactTime(time))"
         case let .upcoming(time):
             return "Next \(compactTime(time))"
-        case .yesterday, .lastOpened:
-            return "Open"
-        case .notOpened:
+        case .yesterday, .lastOpened, .notOpened:
             return "Log"
         }
     }
