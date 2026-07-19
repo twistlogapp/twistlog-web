@@ -389,14 +389,25 @@ struct BottleCard: View {
                     .minimumScaleFactor(0.8)
             }
 
-            Label(statusDetailText, systemImage: statusDetailIcon)
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(todayStatus.accentColor)
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
+            if shouldShowLeftStatusLine {
+                Label(statusDetailText, systemImage: statusDetailIcon)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(todayStatus.accentColor)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .contentShape(Rectangle())
+    }
+
+    private var shouldShowLeftStatusLine: Bool {
+        switch todayStatus {
+        case .upcoming:
+            return false
+        case .opened, .due, .yesterday, .lastOpened, .notOpened:
+            return true
+        }
     }
 
     private var statusDetailText: String {
