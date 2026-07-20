@@ -405,7 +405,7 @@ struct BottleCard: View {
             if shouldShowLeftStatusLine {
                 Label(statusDetailText, systemImage: statusDetailIcon)
                     .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(todayStatus.accentColor)
+                    .foregroundStyle(statusDetailColor)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
             }
@@ -415,6 +415,10 @@ struct BottleCard: View {
     }
 
     private var shouldShowLeftStatusLine: Bool {
+        if partialCompletionText != nil {
+            return true
+        }
+
         switch todayStatus {
         case .due, .soon, .upcoming:
             return false
@@ -424,6 +428,10 @@ struct BottleCard: View {
     }
 
     private var statusDetailText: String {
+        if let partialCompletionText {
+            return partialCompletionText
+        }
+
         switch todayStatus {
         case let .opened(time):
             return "Last opened \(time)"
@@ -443,6 +451,10 @@ struct BottleCard: View {
     }
 
     private var statusDetailIcon: String {
+        if partialCompletionText != nil {
+            return "checkmark.circle"
+        }
+
         switch todayStatus {
         case .opened, .yesterday, .lastOpened:
             return "checkmark.circle"
@@ -451,6 +463,24 @@ struct BottleCard: View {
         case .soon, .upcoming, .notOpened:
             return "clock"
         }
+    }
+
+    private var statusDetailColor: Color {
+        partialCompletionText == nil ? todayStatus.accentColor : TLTheme.green
+    }
+
+    private var partialCompletionText: String? {
+        let todaysReminders = store.reminderDatesForCalendarDay(containing: currentDate, for: bottle)
+        guard todaysReminders.count > 1,
+              !store.isBottleCompleteForCalendarDay(containing: currentDate, for: bottle),
+              let openedToday = store.openingForCalendarDay(containing: currentDate, for: bottle),
+              let nextRequired = store.nextRequiredReminderDate(containing: currentDate, for: bottle)
+        else { return nil }
+
+        let openedTime = openedToday.openedAt.formatted(date: .omitted, time: .shortened)
+        let nextTime = nextRequired.formatted(date: .omitted, time: .shortened)
+        let nextLabel = nextRequired <= currentDate ? "Due" : "Next"
+        return "Opened \(openedTime) - \(nextLabel) \(nextTime)"
     }
 
     private var recentWarningMessage: String {
