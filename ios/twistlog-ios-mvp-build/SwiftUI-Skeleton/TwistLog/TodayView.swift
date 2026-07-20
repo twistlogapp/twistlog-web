@@ -89,38 +89,46 @@ struct TodayView: View {
             let bottles = store.activeBottles
                 .filter { $0.category == category }
                 .sorted { lhs, rhs in
-                    nextReminderDate(for: lhs) < nextReminderDate(for: rhs)
+                    bottleSortKey(for: lhs) < bottleSortKey(for: rhs)
                 }
             guard !bottles.isEmpty else { return nil }
             return BottleCategoryGroup(category: category, bottles: bottles)
         }
     }
 
-    private func nextReminderDate(for bottle: Bottle) -> Date {
-        let fallback = Date.distantFuture
-        if let nextRequired = store.nextRequiredReminderDate(containing: currentDate, for: bottle) {
-            return nextRequired
-        }
-
-        guard !bottle.enabledReminders.isEmpty else { return fallback }
-
-        let calendar = Calendar.current
-        return bottle.enabledReminders.compactMap { reminder in
-            reminder.days.compactMap { weekday -> Date? in
-                var components = DateComponents()
-                components.weekday = weekday.rawValue
-                components.hour = reminder.hour
-                components.minute = reminder.minute
-                return calendar.nextDate(
-                    after: currentDate,
-                    matching: components,
-                    matchingPolicy: .nextTime,
-                    direction: .forward
-                )
-            }
+    private func bottleSortKey(for bottle: Bottle) -> BottleSortKey {
+        let reminderMinute = bottle.enabledReminders
+            .map(\.minuteOfDay)
             .min()
+
+        return BottleSortKey(
+            reminderMinute: reminderMinute,
+            createdAt: bottle.createdAt,
+            nickname: bottle.nickname
+        )
+    }
+}
+
+private struct BottleSortKey: Comparable {
+    var reminderMinute: Int?
+    var createdAt: Date
+    var nickname: String
+
+    static func < (lhs: BottleSortKey, rhs: BottleSortKey) -> Bool {
+        switch (lhs.reminderMinute, rhs.reminderMinute) {
+        case let (lhsMinute?, rhsMinute?) where lhsMinute != rhsMinute:
+            return lhsMinute < rhsMinute
+        case (_?, nil):
+            return true
+        case (nil, _?):
+            return false
+        default:
+            let nameCompare = lhs.nickname.localizedCaseInsensitiveCompare(rhs.nickname)
+            if nameCompare != .orderedSame {
+                return nameCompare == .orderedAscending
+            }
+            return lhs.createdAt < rhs.createdAt
         }
-        .min() ?? fallback
     }
 }
 
