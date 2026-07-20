@@ -73,11 +73,14 @@ struct TodayView: View {
     }
 
     private var allBottlesOpenedToday: Bool {
-        let bottles = store.activeBottles
+        let bottles = store.activeBottles.filter { bottle in
+            bottle.enabledReminders.isEmpty
+            || !store.reminderDatesForCalendarDay(containing: currentDate, for: bottle).isEmpty
+        }
         guard !bottles.isEmpty else { return false }
 
         return bottles.allSatisfy { bottle in
-            store.hasOpeningForCalendarDay(containing: currentDate, for: bottle)
+            store.isBottleCompleteForCalendarDay(containing: currentDate, for: bottle)
         }
     }
 
@@ -95,6 +98,10 @@ struct TodayView: View {
 
     private func nextReminderDate(for bottle: Bottle) -> Date {
         let fallback = Date.distantFuture
+        if let nextRequired = store.nextRequiredReminderDate(containing: currentDate, for: bottle) {
+            return nextRequired
+        }
+
         guard !bottle.enabledReminders.isEmpty else { return fallback }
 
         let calendar = Calendar.current
@@ -454,15 +461,23 @@ struct BottleCard: View {
     }
 
     private var todayStatus: TodayBottleStatus {
+        if let reminder = store.nextRequiredReminderDate(containing: currentDate, for: bottle) {
+            let formattedTime = reminder.formatted(date: .omitted, time: .shortened)
+            if reminder <= currentDate {
+                return .due(time: formattedTime)
+            }
+            if reminder.timeIntervalSince(currentDate) <= Self.soonThreshold {
+                return .soon(time: formattedTime)
+            }
+            return .upcoming(time: formattedTime)
+        }
+
         if let openedToday = store.openingForCalendarDay(containing: currentDate, for: bottle) {
             return .opened(time: openedToday.openedAt.formatted(date: .omitted, time: .shortened))
         }
 
         if let reminder = reminderStatusDate {
             let formattedTime = reminder.formatted(date: .omitted, time: .shortened)
-            if reminder <= currentDate {
-                return .due(time: formattedTime)
-            }
             if reminder.timeIntervalSince(currentDate) <= Self.soonThreshold {
                 return .soon(time: formattedTime)
             }
@@ -979,7 +994,7 @@ struct MultiRecordOpeningView: View {
                 if selectedBottleIds.isEmpty {
                     selectedBottleIds = Set(
                         store.activeBottles
-                            .filter { !store.hasOpeningForCalendarDay(containing: currentDate, for: $0) }
+                            .filter { !store.isBottleCompleteForCalendarDay(containing: currentDate, for: $0) }
                             .map(\.id)
                     )
                 }
@@ -1011,8 +1026,13 @@ struct MultiRecordOpeningView: View {
     }
 
     private func multiRecordSubtitle(for bottle: Bottle) -> String {
-        if store.hasOpeningForCalendarDay(containing: currentDate, for: bottle) {
+        if store.isBottleCompleteForCalendarDay(containing: currentDate, for: bottle) {
             return "Opened for today"
+        }
+
+        if let nextRequired = store.nextRequiredReminderDate(containing: currentDate, for: bottle) {
+            let time = nextRequired.formatted(date: .omitted, time: .shortened)
+            return nextRequired <= currentDate ? "Due \(time)" : "Next \(time)"
         }
 
         let reminders = bottle.enabledReminders.map(\.displayTime)

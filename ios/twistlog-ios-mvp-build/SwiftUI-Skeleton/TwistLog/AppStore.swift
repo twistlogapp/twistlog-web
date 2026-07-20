@@ -105,6 +105,73 @@ final class AppStore: ObservableObject {
         openingForCalendarDay(containing: date, for: bottle) != nil
     }
 
+    func reminderDatesForCalendarDay(containing date: Date = Date(), for bottle: Bottle) -> [Date] {
+        let calendar = Calendar.current
+        let todayWeekday = calendar.component(.weekday, from: date)
+        guard let weekday = Weekday(rawValue: todayWeekday) else { return [] }
+
+        return bottle.enabledReminders
+            .filter { $0.days.contains(weekday) }
+            .compactMap { reminder in
+                calendar.date(
+                    bySettingHour: reminder.hour,
+                    minute: reminder.minute,
+                    second: 0,
+                    of: date
+                )
+            }
+            .sorted()
+    }
+
+    func openingCountForCalendarDay(containing date: Date = Date(), for bottle: Bottle) -> Int {
+        openingEvents
+            .filter { event in
+                event.bottleId == bottle.id && Calendar.current.isDate(event.openedAt, inSameDayAs: date)
+            }
+            .count
+    }
+
+    func nextRequiredReminderDate(containing date: Date = Date(), for bottle: Bottle) -> Date? {
+        let todaysReminders = reminderDatesForCalendarDay(containing: date, for: bottle)
+        guard !todaysReminders.isEmpty else { return nil }
+
+        return todaysReminders.enumerated()
+            .first { index, _ in
+                !isReminderSlotSatisfied(index: index, reminders: todaysReminders, date: date, bottle: bottle)
+            }?
+            .element
+    }
+
+    func isBottleCompleteForCalendarDay(containing date: Date = Date(), for bottle: Bottle) -> Bool {
+        let todaysReminders = reminderDatesForCalendarDay(containing: date, for: bottle)
+
+        if todaysReminders.isEmpty {
+            if bottle.enabledReminders.isEmpty {
+                return hasOpeningForCalendarDay(containing: date, for: bottle)
+            }
+
+            return true
+        }
+
+        return todaysReminders.enumerated().allSatisfy { index, _ in
+            isReminderSlotSatisfied(index: index, reminders: todaysReminders, date: date, bottle: bottle)
+        }
+    }
+
+    private func isReminderSlotSatisfied(index: Int, reminders: [Date], date: Date, bottle: Bottle) -> Bool {
+        let calendar = Calendar.current
+        let dayStart = calendar.startOfDay(for: date)
+        let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart) ?? date
+        let slotStart = index == 0 ? dayStart : reminders[index]
+        let slotEnd = index + 1 < reminders.count ? reminders[index + 1] : dayEnd
+
+        return openingEvents.contains { event in
+            event.bottleId == bottle.id
+            && event.openedAt >= slotStart
+            && event.openedAt < slotEnd
+        }
+    }
+
     func shouldWarnRecentOpening(for bottle: Bottle, now: Date = Date()) -> Bool {
         guard bottle.minimumIntervalEnabled,
               let minutes = bottle.minimumIntervalMinutes,
