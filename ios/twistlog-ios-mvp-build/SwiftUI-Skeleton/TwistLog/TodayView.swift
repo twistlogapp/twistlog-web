@@ -303,6 +303,7 @@ struct BottleCard: View {
 
                 OpeningRingAction(
                     status: todayStatus,
+                    captionOverride: waterRingCaption,
                     bottleName: bottle.nickname,
                     onTap: {
                         showRecordOptions = true
@@ -489,6 +490,22 @@ struct BottleCard: View {
             todaysReminders.count
         )
         return "\(openingCount) of \(todaysReminders.count) openings recorded today"
+    }
+
+    private var waterRingCaption: String? {
+        guard bottle.category == .water else { return nil }
+
+        let todaysReminders = store.reminderDatesForCalendarDay(containing: currentDate, for: bottle)
+        guard todaysReminders.count > 1 else { return nil }
+
+        let recordedCount = min(
+            store.openingCountForCalendarDay(containing: currentDate, for: bottle),
+            todaysReminders.count
+        )
+        let remainingCount = todaysReminders.count - recordedCount
+        guard remainingCount > 0 else { return nil }
+
+        return "\(remainingCount) left"
     }
 
     private var recentWarningMessage: String {
@@ -716,6 +733,7 @@ struct EmptyStateView: View {
 
 struct OpeningRingAction: View {
     var status: TodayBottleStatus
+    var captionOverride: String? = nil
     var bottleName: String
     var onTap: () -> Void
     var onLongPress: () -> Void
@@ -755,6 +773,10 @@ struct OpeningRingAction: View {
     }
 
     private var caption: String {
+        if let captionOverride {
+            return captionOverride
+        }
+
         switch status {
         case .opened:
             return "Done"
