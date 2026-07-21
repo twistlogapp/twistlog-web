@@ -481,14 +481,14 @@ struct BottleCard: View {
         let todaysReminders = store.reminderDatesForCalendarDay(containing: currentDate, for: bottle)
         guard todaysReminders.count > 1,
               !store.isBottleCompleteForCalendarDay(containing: currentDate, for: bottle),
-              let openedToday = store.openingForCalendarDay(containing: currentDate, for: bottle),
-              let nextRequired = store.nextRequiredReminderDate(containing: currentDate, for: bottle)
+              store.openingForCalendarDay(containing: currentDate, for: bottle) != nil
         else { return nil }
 
-        let openedTime = openedToday.openedAt.formatted(date: .omitted, time: .shortened)
-        let nextTime = nextRequired.formatted(date: .omitted, time: .shortened)
-        let nextLabel = nextRequired <= currentDate ? "Due" : "Next"
-        return "Opened \(openedTime) - \(nextLabel) \(nextTime)"
+        let openingCount = min(
+            store.openingCountForCalendarDay(containing: currentDate, for: bottle),
+            todaysReminders.count
+        )
+        return "\(openingCount) of \(todaysReminders.count) openings recorded today"
     }
 
     private var recentWarningMessage: String {
