@@ -135,11 +135,9 @@ final class AppStore: ObservableObject {
         let todaysReminders = reminderDatesForCalendarDay(containing: date, for: bottle)
         guard !todaysReminders.isEmpty else { return nil }
 
-        return todaysReminders.enumerated()
-            .first { index, _ in
-                !isReminderSlotSatisfied(index: index, reminders: todaysReminders, date: date, bottle: bottle)
-            }?
-            .element
+        let satisfiedCount = min(openingCountForCalendarDay(containing: date, for: bottle), todaysReminders.count)
+        guard satisfiedCount < todaysReminders.count else { return nil }
+        return todaysReminders[satisfiedCount]
     }
 
     func isBottleCompleteForCalendarDay(containing date: Date = Date(), for bottle: Bottle) -> Bool {
@@ -153,26 +151,15 @@ final class AppStore: ObservableObject {
             return true
         }
 
-        return todaysReminders.enumerated().allSatisfy { index, _ in
-            isReminderSlotSatisfied(index: index, reminders: todaysReminders, date: date, bottle: bottle)
-        }
-    }
-
-    private func isReminderSlotSatisfied(index: Int, reminders: [Date], date: Date, bottle: Bottle) -> Bool {
-        let calendar = Calendar.current
-        let dayStart = calendar.startOfDay(for: date)
-        let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart) ?? date
-        let slotStart = index == 0 ? dayStart : reminders[index]
-        let slotEnd = index + 1 < reminders.count ? reminders[index + 1] : dayEnd
-
-        return openingEvents.contains { event in
-            event.bottleId == bottle.id
-            && event.openedAt >= slotStart
-            && event.openedAt < slotEnd
-        }
+        return openingCountForCalendarDay(containing: date, for: bottle) >= todaysReminders.count
     }
 
     func shouldWarnRecentOpening(for bottle: Bottle, now: Date = Date()) -> Bool {
+        if let nextRequired = nextRequiredReminderDate(containing: now, for: bottle),
+           nextRequired <= now {
+            return false
+        }
+
         guard bottle.minimumIntervalEnabled,
               let minutes = bottle.minimumIntervalMinutes,
               let last = lastOpening(for: bottle)
