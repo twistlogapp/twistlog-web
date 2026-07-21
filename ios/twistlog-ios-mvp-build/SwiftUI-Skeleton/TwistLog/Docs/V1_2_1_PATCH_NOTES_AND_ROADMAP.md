@@ -80,6 +80,32 @@ Bottles tab now matches Today:
 - Text: `No reminder set`
 - Icon: `bell.slash`
 
+### Share opening history
+
+History now includes a native iOS share action for opening records.
+
+Behavior:
+
+- Available from the History toolbar when opening records exist.
+- Generates a local CSV file named like `TwistLog-Opening-History-2026-07-21-1842.csv`.
+- Uses the native iOS share sheet for Files, AirDrop, Mail, Messages, and other system destinations.
+- Does not add a backend, account, sync, email integration, or cloud dependency.
+- Includes archived bottle history because opening history is preserved after archiving.
+- Missing bottle fallback is `Deleted bottle` and `Unknown` category.
+
+CSV columns:
+
+- `Bottle`
+- `Category`
+- `Opened At`
+- `Source`
+- `Note`
+
+Safe wording:
+
+- Use `Share history`, `opening history`, and `opening records`.
+- Avoid `adherence`, `compliance`, `missed`, `taken`, `dose taken`, and `medication report`.
+
 ## Product Decision: Count-Based Completion
 
 TwistLog records bottle-opening events. It does not verify medication ingestion, dosage, or clinical adherence.

@@ -4,6 +4,7 @@ struct OpeningHistoryView: View {
     @EnvironmentObject private var store: AppStore
     @State private var eventPendingDeletion: OpeningEvent?
     @State private var eventPendingEdit: OpeningEvent?
+    @State private var historyExportURL: URL?
 
     var body: some View {
         NavigationStack {
@@ -66,6 +67,19 @@ struct OpeningHistoryView: View {
             .background(TLTheme.lightGray)
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    if !store.openingEvents.isEmpty, let historyExportURL {
+                        ShareLink(item: historyExportURL) {
+                            Image(systemName: "square.and.arrow.up")
+                        }
+                        .accessibilityLabel("Share opening history")
+                    }
+                }
+            }
+            .onAppear {
+                refreshHistoryExportURL()
+            }
             .alert("Delete opening record?", isPresented: deleteAlertBinding) {
                 Button("Cancel", role: .cancel) {
                     eventPendingDeletion = nil
@@ -74,6 +88,7 @@ struct OpeningHistoryView: View {
                 Button("Delete", role: .destructive) {
                     if let eventPendingDeletion {
                         store.deleteOpening(eventPendingDeletion)
+                        refreshHistoryExportURL()
                     }
                     eventPendingDeletion = nil
                 }
@@ -83,6 +98,7 @@ struct OpeningHistoryView: View {
             .sheet(item: $eventPendingEdit) { event in
                 EditOpeningTimeSheet(event: event) { updatedDate in
                     store.updateOpening(event, openedAt: updatedDate)
+                    refreshHistoryExportURL()
                     eventPendingEdit = nil
                 }
             }
@@ -141,6 +157,57 @@ struct OpeningHistoryView: View {
 
     private func bottleCategory(for event: OpeningEvent) -> BottleCategory? {
         store.bottles.first(where: { $0.id == event.bottleId })?.category
+    }
+
+    private func refreshHistoryExportURL() {
+        historyExportURL = OpeningHistoryCSVExporter.makeFile(
+            events: sortedEvents,
+            bottles: store.bottles
+        )
+    }
+}
+
+private enum OpeningHistoryCSVExporter {
+    static func makeFile(events: [OpeningEvent], bottles: [Bottle]) -> URL? {
+        guard !events.isEmpty else { return nil }
+
+        let csv = makeCSV(events: events, bottles: bottles)
+        let filenameDateFormatter = DateFormatter()
+        filenameDateFormatter.dateFormat = "yyyy-MM-dd-HHmm"
+        let filenameDate = filenameDateFormatter.string(from: Date())
+
+        let fileURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("TwistLog-Opening-History-\(filenameDate)")
+            .appendingPathExtension("csv")
+
+        do {
+            try csv.write(to: fileURL, atomically: true, encoding: .utf8)
+            return fileURL
+        } catch {
+            return nil
+        }
+    }
+
+    private static func makeCSV(events: [OpeningEvent], bottles: [Bottle]) -> String {
+        let bottleById = Dictionary(uniqueKeysWithValues: bottles.map { ($0.id, $0) })
+        let rows = events.map { event in
+            let bottle = bottleById[event.bottleId]
+            return [
+                bottle?.nickname ?? "Deleted bottle",
+                bottle?.category.title ?? "Unknown",
+                event.openedAt.formatted(date: .abbreviated, time: .shortened),
+                event.source.displayName,
+                event.note ?? ""
+            ]
+        }
+
+        return ([["Bottle", "Category", "Opened At", "Source", "Note"]] + rows)
+            .map { row in row.map { escapedField($0) }.joined(separator: ",") }
+            .joined(separator: "\n")
+    }
+
+    private static func escapedField(_ field: String) -> String {
+        "\"\(field.replacingOccurrences(of: "\"", with: "\"\""))\""
     }
 }
 
