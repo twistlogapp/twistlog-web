@@ -125,10 +125,10 @@ struct BottleDetailView: View {
                     }
 
                     Section("Reminder") {
-                        if bottle.enabledReminders.isEmpty {
+                        if bottle.sortedEnabledReminders.isEmpty {
                             LabeledContent("Reminder", value: "Off")
                         } else {
-                            ForEach(bottle.enabledReminders) { reminder in
+                            ForEach(bottle.sortedEnabledReminders) { reminder in
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text(reminder.displayTime)
                                         .font(.headline)

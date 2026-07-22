@@ -80,6 +80,17 @@ Bottles tab now matches Today:
 - Text: `No reminder set`
 - Icon: `bell.slash`
 
+### Chronological reminder display
+
+Reminder summaries now display times in chronological order instead of add order.
+
+Example:
+
+- Added order: `8 AM`, `11 PM`, `3 PM`
+- Display order: `8 AM`, `3 PM +1 more`
+
+This affects Today, Bottles, Details, and saved reminder normalization without changing notification scheduling behavior.
+
 ### Share opening history
 
 History now includes a native iOS share action for opening records.

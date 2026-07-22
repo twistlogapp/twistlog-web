@@ -191,6 +191,12 @@ struct AddBottleView: View {
                 return normalized
             }
             .filter { !$0.days.isEmpty }
+            .sorted { lhs, rhs in
+                if lhs.minuteOfDay != rhs.minuteOfDay {
+                    return lhs.minuteOfDay < rhs.minuteOfDay
+                }
+                return lhs.id.uuidString < rhs.id.uuidString
+            }
     }
 
     private var reminderDays: Set<Weekday> {

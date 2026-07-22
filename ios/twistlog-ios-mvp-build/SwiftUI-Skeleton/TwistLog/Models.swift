@@ -66,6 +66,15 @@ struct Bottle: Identifiable, Hashable, Codable {
         reminders.filter { $0.isEnabled && !$0.days.isEmpty }
     }
 
+    var sortedEnabledReminders: [BottleReminder] {
+        enabledReminders.sorted { lhs, rhs in
+            if lhs.minuteOfDay != rhs.minuteOfDay {
+                return lhs.minuteOfDay < rhs.minuteOfDay
+            }
+            return lhs.id.uuidString < rhs.id.uuidString
+        }
+    }
+
     enum CodingKeys: String, CodingKey {
         case id
         case nickname

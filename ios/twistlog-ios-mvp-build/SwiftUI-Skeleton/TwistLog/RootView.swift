@@ -337,7 +337,7 @@ private struct BottleManagementRow: View {
     }
 
     private var reminderSummary: String {
-        let reminders = bottle.enabledReminders
+        let reminders = bottle.sortedEnabledReminders
         guard !reminders.isEmpty else { return "No reminder set" }
 
         let times = reminders

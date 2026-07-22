@@ -551,7 +551,7 @@ struct BottleCard: View {
     }
 
     private var reminderStatusDate: Date? {
-        let reminders = bottle.enabledReminders
+        let reminders = bottle.sortedEnabledReminders
         guard !reminders.isEmpty else { return nil }
 
         let calendar = Calendar.current
@@ -611,7 +611,7 @@ struct BottleCard: View {
     }
 
     private var reminderSummary: String {
-        let reminders = bottle.enabledReminders
+        let reminders = bottle.sortedEnabledReminders
         guard !reminders.isEmpty else {
             return "No reminder set"
         }
@@ -1095,7 +1095,7 @@ struct MultiRecordOpeningView: View {
             return nextRequired <= currentDate ? "Due \(time)" : "Next \(time)"
         }
 
-        let reminders = bottle.enabledReminders.map(\.displayTime)
+        let reminders = bottle.sortedEnabledReminders.map(\.displayTime)
         guard !reminders.isEmpty else { return "No reminder set" }
         return reminders.joined(separator: ", ")
     }
